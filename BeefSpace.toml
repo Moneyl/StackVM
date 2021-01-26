@@ -1,0 +1,5 @@
+FileVersion = 1
+Projects = {VmScriptingFun = {Path = "."}}
+
+[Workspace]
+StartupProject = "VmScriptingFun"
