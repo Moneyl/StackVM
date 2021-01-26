@@ -11,10 +11,17 @@ namespace VmScriptingFun
 			Console.WriteLine($"Created VM. Stack size: {vm.[Friend]_binary.Count}");
 			Console.WriteLine("Creating binary...\n");
 
+			//Equal to: X = (10 + 15) - (2 + 3)
 			vm.AddValueBytecode(2);
-			vm.AddValueBytecode(5);
+			vm.AddValueBytecode(3);
 			vm.AddBytecode(.Add);
+			vm.AddValueBytecode(15);
+			vm.AddValueBytecode(10);
+			vm.AddBytecode(.Add);
+			vm.AddBytecode(.Subtract);
 			vm.AddBytecode(.Print);
+			vm.AddBytecode(.SetX);
+			vm.AddBytecode(.TestPrint);
 
 			Console.WriteLine("Interpreting bytecode... ");
 			vm.Interpret();
@@ -25,7 +32,7 @@ namespace VmScriptingFun
 			Console.WriteLine("Stack state:");
 			for(u32 i = 0; i < vm.[Friend]_stackPos; i++)
 			{
-				u32 value = vm.[Friend]_stack[i];
+				i32 value = vm.[Friend]_stack[i];
 				Console.WriteLine($"    [{i}]: {value}");
 			}
 
@@ -38,7 +45,7 @@ namespace VmScriptingFun
 				Bytecode bytecode = vm.[Friend]_binary[i];
 				if(bytecode == .Value)
 				{
-					u32 value = *(u32*)&vm.[Friend]_binary[i + 1];
+					i32 value = *(i32*)&vm.[Friend]_binary[i + 1];
 					Console.WriteLine($"    [{bytecodeCount}]: {bytecode.ToString(.. scope String())}, {value}");
 					i += 5;
 				}

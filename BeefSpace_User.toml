@@ -1,7 +1,7 @@
 FileVersion = 1
 LastConfig = "Debug"
 LastPlatform = "Win64"
-RecentFilesList = ["src\\Program.bf", "src\\VM.bf", "src\\VMConfig.bf", "src\\Enums.bf"]
+RecentFilesList = ["src\\VMConfig.bf", "src\\Program.bf", "src\\VM.bf", "src\\Enums.bf"]
 
 [MainWindow]
 X = 2961
@@ -49,21 +49,20 @@ DefaultDocumentsTabbedView = true
 Type = "TabbedView"
 
 [[MainDockingFrame.DockedWidgets.DockedWidgets.DockedWidgets.Tabs]]
-Active = true
 TabLabel = "Program.bf"
 TabWidth = 106.0
 Type = "SourceViewPanel"
 FilePath = "src\\Program.bf"
-CursorPos = 350
-VertPos = 16.0
+CursorPos = 121
 ProjectName = "VmScriptingFun"
 
 [[MainDockingFrame.DockedWidgets.DockedWidgets.DockedWidgets.Tabs]]
+Active = true
 TabLabel = "VMConfig.bf"
 TabWidth = 113.0
 Type = "SourceViewPanel"
 FilePath = "src\\VMConfig.bf"
-CursorPos = 135
+CursorPos = 161
 ProjectName = "VmScriptingFun"
 
 [[MainDockingFrame.DockedWidgets.DockedWidgets.DockedWidgets.Tabs]]
@@ -71,8 +70,7 @@ TabLabel = "VM.bf"
 TabWidth = 75.0
 Type = "SourceViewPanel"
 FilePath = "src\\VM.bf"
-CursorPos = 1757
-VertPos = 720.0
+CursorPos = 340
 ProjectName = "VmScriptingFun"
 
 [[MainDockingFrame.DockedWidgets.DockedWidgets.DockedWidgets.Tabs]]

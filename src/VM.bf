@@ -6,17 +6,17 @@ namespace VmScriptingFun
 	//Stack based virtual machine. Runs bytecode
 	public class VM
 	{
-		private u32[VMConfig.StackSize] _stack = .(); //Contains temporary variables and state. Data stored LIFO.
+		private i32[VMConfig.StackSize] _stack = .(); //Contains temporary variables and state. Data stored LIFO.
 		private u32 _stackPos = 0; //Current position in the stack
 
 		//Todo: Move this into a struct that is passed to the VM
 		private List<Bytecode> _binary = new List<Bytecode>() ~delete _; //Binary blob that the vm runs
 
 		//Test values used for VM dev. Will be removed once it has variables
-		public u32 X = 0;
-		public u32 Y = 0;
+		public i32 X = 0;
+		public i32 Y = 0;
 
-		private void Push(u32 value)
+		private void Push(i32 value)
 		{
 			//Ensure no stack overflow
 #if DEBUG
@@ -26,7 +26,7 @@ namespace VmScriptingFun
 			_stack[_stackPos++] = value;
 		}
 
-		private u32 Pop()
+		private i32 Pop()
 		{
 			//Ensure stack isn't empty
 #if DEBUG
@@ -35,9 +35,9 @@ namespace VmScriptingFun
 			return _stack[--_stackPos];
 		}
 
-		private u32 GetStackTop()
+		private i32 GetStackTop()
 		{
-			u32 value = Pop();
+			i32 value = Pop();
 			Push(value);
 			return value;
 		}
@@ -60,14 +60,14 @@ namespace VmScriptingFun
 					Y = Pop();
 					break;
 				case .Add:
-					u32 a = Pop();
-					u32 b = Pop();
+					i32 a = Pop();
+					i32 b = Pop();
 					Push(a + b);
 					break;
 				case .Subtract:
-					u32 a = Pop();
-					u32 b = Pop();
-					Push((u32)(a - b)); //Todo: Why is a u32 - u32 a i64
+					i32 a = Pop();
+					i32 b = Pop();
+					Push((i32)(a - b)); //Todo: Why is a u32 - u32 a i64
 					break;
 				case .Print:
 					Console.WriteLine($"Top of stack: {GetStackTop()}");
@@ -76,7 +76,7 @@ namespace VmScriptingFun
 					Console.WriteLine($"X: {X}, Y: {Y}");
 					break;
 				case .Value:
-					u32 value = *(u32*)&_binary[i + 1];
+					i32 value = *(i32*)&_binary[i + 1];
 					i += 4;
 					Push(value);
 					break;
@@ -96,7 +96,7 @@ namespace VmScriptingFun
 			_binary.Add(bytecode);
 		}
 
-		public void AddValueBytecode(u32 value)
+		public void AddValueBytecode(i32 value)
 		{
 			//Ensure there's enough for the value bytecode and 4 byte value
 			if(_binary.Capacity < _binary.Count + 5)
@@ -105,7 +105,7 @@ namespace VmScriptingFun
 			//Add value bytecode
 			_binary.Add(.Value);
 			//Add value by interpreting next 4 bytes as a single u32
-			u32* valuePtr = (u32*)((&_binary.Back) + 1);
+			i32* valuePtr = (i32*)((&_binary.Back) + 1);
 			*valuePtr = value;
 			_binary.[Friend]mSize += 4;
 		}
