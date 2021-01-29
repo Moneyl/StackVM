@@ -109,5 +109,18 @@ namespace VmScriptingFun
 			*valuePtr = value;
 			_binary.[Friend]mSize += 4;
 		}
+
+		//Reset stack state
+		public void ClearStack()
+		{
+			//Don't even need to clear values. They'll be overwritten as values are pushed onto the stack.
+			_stackPos = 0;
+		}
+
+		//Clear all bytecode
+		public void ClearBytecode()
+		{
+			_binary.Clear();
+		}
 	}
 }

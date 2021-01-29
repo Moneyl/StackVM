@@ -1,11 +1,11 @@
 FileVersion = 1
-LastConfig = "Debug"
+LastConfig = "Release"
 LastPlatform = "Win64"
-RecentFilesList = ["src\\VMConfig.bf", "src\\Program.bf", "src\\VM.bf", "src\\Enums.bf"]
+RecentFilesList = ["src\\VM.bf", "src\\Program.bf", "c:\\Program Files\\BeefLang\\BeefLibs\\corlib\\src\\TimeSpan.bf", "src\\VMConfig.bf", "src\\Enums.bf"]
 
 [MainWindow]
-X = 2961
-Y = -14
+X = 2594
+Y = 3
 Width = 1200
 Height = 1024
 ShowKind = "Maximized"
@@ -50,32 +50,33 @@ Type = "TabbedView"
 
 [[MainDockingFrame.DockedWidgets.DockedWidgets.DockedWidgets.Tabs]]
 TabLabel = "Program.bf"
-TabWidth = 106.0
+TabWidth = 96.0
 Type = "SourceViewPanel"
 FilePath = "src\\Program.bf"
-CursorPos = 121
+CursorPos = 2631
+VertPos = 826.0
+ProjectName = "VmScriptingFun"
+
+[[MainDockingFrame.DockedWidgets.DockedWidgets.DockedWidgets.Tabs]]
+TabLabel = "VMConfig.bf"
+TabWidth = 103.0
+Type = "SourceViewPanel"
+FilePath = "src\\VMConfig.bf"
 ProjectName = "VmScriptingFun"
 
 [[MainDockingFrame.DockedWidgets.DockedWidgets.DockedWidgets.Tabs]]
 Active = true
-TabLabel = "VMConfig.bf"
-TabWidth = 113.0
-Type = "SourceViewPanel"
-FilePath = "src\\VMConfig.bf"
-CursorPos = 161
-ProjectName = "VmScriptingFun"
-
-[[MainDockingFrame.DockedWidgets.DockedWidgets.DockedWidgets.Tabs]]
 TabLabel = "VM.bf"
-TabWidth = 75.0
+TabWidth = 65.0
 Type = "SourceViewPanel"
 FilePath = "src\\VM.bf"
-CursorPos = 340
+CursorPos = 2786
+VertPos = 631.0
 ProjectName = "VmScriptingFun"
 
 [[MainDockingFrame.DockedWidgets.DockedWidgets.DockedWidgets.Tabs]]
 TabLabel = "Enums.bf"
-TabWidth = 93.0
+TabWidth = 83.0
 Type = "SourceViewPanel"
 FilePath = "src\\Enums.bf"
 CursorPos = 614

@@ -1,3 +1,5 @@
+using System.Collections;
+using System.Diagnostics;
 using System;
 
 namespace VmScriptingFun
@@ -57,8 +59,49 @@ namespace VmScriptingFun
 				bytecodeCount++;
 			}
 
+			//Benchmark VM interpreter speed
+			BenchmarkVm(vm);
+
+			//Wait for input so the console doesn't close immediately
 			Console.WriteLine("\nPress any key to exit.");
 			Console.Read();
+		}
+
+		//Benchmark VM interpreter speed
+		public static void BenchmarkVm(VM vm)
+		{
+			//Custom bytecode for benchmarks. No prints since they slow things down immensely
+			//Main purpose of benchmarks is to test the performance effects of different vm changes/optimizations
+			vm.ClearBytecode();
+			vm.AddValueBytecode(2);
+			vm.AddValueBytecode(3);
+			vm.AddBytecode(.Add);
+			vm.AddValueBytecode(15);
+			vm.AddValueBytecode(10);
+			vm.AddBytecode(.Add);
+			vm.AddBytecode(.Subtract);
+			vm.AddBytecode(.SetX);
+
+			u32 numBenchmarkRuns = 5000;
+			var timer = scope Stopwatch(false);
+			var times = scope List<f64>(); //Sample times in ms
+			times.Reserve(numBenchmarkRuns);
+			for(u32 j = 0; j < numBenchmarkRuns; j++)
+			{
+				vm.ClearStack();
+				timer.Restart();
+				vm.Interpret();
+				timer.Stop();
+				times.Add(timer.Elapsed.TotalMilliseconds);
+			}
+
+			//Calculate average and print result
+			f64 average = 0.0f;
+			for(u32 j = 0; j < numBenchmarkRuns; j++)
+				average += times[j];
+
+			average /= numBenchmarkRuns;
+			Console.WriteLine($"Average time after {numBenchmarkRuns} runs: {average:F4}ms | {average * 1000.0f:F4}us | {average * 1000000.0f:F4}ns");
 		}
 	}
 }
