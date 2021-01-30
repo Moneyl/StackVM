@@ -136,7 +136,7 @@ namespace VmScriptingFun
 			var token = _tokenizer.Next();
 			while(token.Type != .Eof)
 			{
-				Console.WriteLine($"    {token.Type.ToString(.. scope String())} | '{token.Value}'");
+				Console.WriteLine($"\r\t\t\t\t'{token.Value}'    \r\t{token.Type.ToString(.. scope String())} ");
 				token = _tokenizer.Next();
 			}
 		}
