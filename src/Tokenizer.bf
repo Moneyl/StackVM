@@ -6,24 +6,26 @@ namespace VmScriptingFun
 	//Converts source code into useful elements called tokens. Outputs tokens on demand.
 	public class Tokenizer
 	{
-		private String _source;
-		private u32 _pos;
+		private StringView _source;
+		private u32 _pos = 0;
+		private u32 _line = 0;
 		private char8[24] _invalidIdentifierCharacters = .(' ', '\n', '\t', '\0', '(', ')', '{', '}',
 			',', '.', '=', '!', '+', '-', '*', '/', '^',
 			'%', '?', '>', '<', '!', ':', ';');
 
 		//Set source string. Doesn't take ownership of string. The string must stay alive until the tokenizer is destroyed.
-		public void SetSource(String source)
+		public void SetSource(StringView source)
 		{
 			_source = source;
 			_pos = 0;
+			_line = 0;
 		}
 
 		//Get next token
 		public Token Next()
 		{
 			if(_pos >= _source.Length)
-				return .(.Eof, "EOF");
+				return .(.Eof, "EOF", _line);
 
 			//return .(.None, _source.Substring(_pos++, 1));
 			while(_pos < _source.Length)
@@ -35,21 +37,21 @@ namespace VmScriptingFun
 				switch(character)
 				{
 				case '(':
-					return .(.ParenthesesLeft, "(");
+					return .(.ParenthesesLeft, "(", _line);
 				case ')':
-					return .(.ParenthesesRight, ")");
+					return .(.ParenthesesRight, ")", _line);
 				case '=':
-					return .(.Equals, "=");
+					return .(.Equals, "=", _line);
 				case '+':
-					return .(.Plus, "+");
+					return .(.Plus, "+", _line);
 				case '-':
-					return .(.Minus, "-");
+					return .(.Minus, "-", _line);
 				case '*':
-					return .(.Multiply, "*");
+					return .(.Asterisk, "*", _line);
 				case '/':
-					return .(.Divide, "/");
+					return .(.Slash, "/", _line);
 				case ';':
-					return .(.Semicolon, ";");
+					return .(.Semicolon, ";", _line);
 				default:
 					break;
 				}
@@ -58,12 +60,12 @@ namespace VmScriptingFun
 				_pos--; //Decrease _pos to revert previous read
 				var maybeLiteral = TryReadLiteral(_source[_pos]);
 				if(maybeLiteral == .Err)
-					return .(.Error, "Invalid literal error");
+					return .(.Error, "Invalid literal error", _line);
 				else
 					return maybeLiteral.Value;
 			}
 
-			return .(.Error, "General parse error");
+			return .(.Error, "General parse error", _line);
 		}
 
 		//Returns true if the character is ignored by the tokenizer
@@ -125,7 +127,7 @@ namespace VmScriptingFun
 
 			u32 substringLength = identifierEnd - _pos;
 			_pos += substringLength;
-			return .Ok(.(tokenType, _source.Substring(_pos - substringLength, substringLength)));
+			return .Ok(.(tokenType, _source.Substring(_pos - substringLength, substringLength), _line));
 		}
 	}
 }
