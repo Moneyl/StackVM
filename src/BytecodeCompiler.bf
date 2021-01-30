@@ -147,7 +147,7 @@ namespace VmScriptingFun
 			TokenType operatorType = _previous.Type;
 
 			//Parse the operand
-			Expression();
+			ParsePrecedence(.Unary);
 
 			//Emit the operator instruction.
 		  	switch (operatorType)

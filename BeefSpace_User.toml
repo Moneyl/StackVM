@@ -1,11 +1,11 @@
 FileVersion = 1
 LastConfig = "Debug"
 LastPlatform = "Win64"
-RecentFilesList = ["src\\BytecodeCompiler.bf", "src\\VM.bf", "src\\Program.bf", "Disassembly", "src\\Enums.bf", "src\\Tokenizer.bf", "src\\Token.bf", "src\\VMConfig.bf"]
+RecentFilesList = ["src\\BytecodeCompiler.bf", "src\\Tokenizer.bf", "src\\VM.bf", "src\\Program.bf", "Disassembly", "src\\Enums.bf", "src\\Token.bf", "src\\VMConfig.bf"]
 
 [MainWindow]
-X = 32
-Y = 0
+X = 323
+Y = 1010
 Width = 1200
 Height = 1024
 ShowKind = "Maximized"
@@ -76,8 +76,8 @@ TabLabel = "BytecodeCompiler.bf"
 TabWidth = 160.0
 Type = "SourceViewPanel"
 FilePath = "src\\BytecodeCompiler.bf"
-CursorPos = 2554
-VertPos = 675.0
+CursorPos = 4331
+VertPos = 1845.0
 ProjectName = "VmScriptingFun"
 
 [[MainDockingFrame.DockedWidgets.DockedWidgets.DockedWidgets.Tabs]]
@@ -85,7 +85,8 @@ TabLabel = "Tokenizer.bf"
 TabWidth = 109.0
 Type = "SourceViewPanel"
 FilePath = "src\\Tokenizer.bf"
-CursorPos = 2605
+CursorPos = 1247
+VertPos = 315.0
 ProjectName = "VmScriptingFun"
 
 [[MainDockingFrame.DockedWidgets.DockedWidgets.DockedWidgets.Tabs]]

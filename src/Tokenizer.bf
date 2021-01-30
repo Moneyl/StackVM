@@ -65,7 +65,7 @@ namespace VmScriptingFun
 					return maybeLiteral.Value;
 			}
 
-			return .(.Error, "General parse error", _line);
+			return .(.Eof, "EOF", _line);
 		}
 
 		//Returns true if the character is ignored by the tokenizer
