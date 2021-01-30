@@ -13,7 +13,7 @@ namespace VmScriptingFun
 		private List<Bytecode> _binary = new List<Bytecode>() ~delete _; //Binary blob that the vm runs
 
 		//Classes used for parsing scripts and converting them to bytecode
-		private VmScriptingFun.Compiler _compiler = new VmScriptingFun.Compiler() ~delete _;
+		private BytecodeCompiler _compiler = new BytecodeCompiler() ~delete _;
 
 		//Test values used for VM dev. Will be removed once it has variables
 		public i32 X = 0;

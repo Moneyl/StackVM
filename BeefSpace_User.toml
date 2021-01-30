@@ -1,10 +1,10 @@
 FileVersion = 1
-LastConfig = "Release"
+LastConfig = "Debug"
 LastPlatform = "Win64"
-RecentFilesList = ["src\\Compiler.bf", "src\\VM.bf", "src\\Tokenizer.bf", "src\\Enums.bf", "src\\Program.bf", "src\\Token.bf", "src\\VMConfig.bf"]
+RecentFilesList = ["src\\BytecodeCompiler.bf", "src\\VM.bf", "src\\Program.bf", "Disassembly", "src\\Enums.bf", "src\\Tokenizer.bf", "src\\Token.bf", "src\\VMConfig.bf"]
 
 [MainWindow]
-X = 2584
+X = 32
 Y = 0
 Width = 1200
 Height = 1024
@@ -49,12 +49,16 @@ DefaultDocumentsTabbedView = true
 Type = "TabbedView"
 
 [[MainDockingFrame.DockedWidgets.DockedWidgets.DockedWidgets.Tabs]]
+TabLabel = "Disassembly"
+TabWidth = 112.0
+Type = "DisassemblyPanel"
+
+[[MainDockingFrame.DockedWidgets.DockedWidgets.DockedWidgets.Tabs]]
 TabLabel = "Program.bf"
 TabWidth = 96.0
 Type = "SourceViewPanel"
 FilePath = "src\\Program.bf"
-CursorPos = 785
-VertPos = 1170.0
+CursorPos = 984
 ProjectName = "VmScriptingFun"
 
 [[MainDockingFrame.DockedWidgets.DockedWidgets.DockedWidgets.Tabs]]
@@ -62,18 +66,18 @@ TabLabel = "VM.bf"
 TabWidth = 65.0
 Type = "SourceViewPanel"
 FilePath = "src\\VM.bf"
-CursorPos = 2009
-VertPos = 720.0
+CursorPos = 2298
+VertPos = 1080.0
 ProjectName = "VmScriptingFun"
 
 [[MainDockingFrame.DockedWidgets.DockedWidgets.DockedWidgets.Tabs]]
 Active = true
-TabLabel = "Compiler.bf"
-TabWidth = 107.0
+TabLabel = "BytecodeCompiler.bf"
+TabWidth = 160.0
 Type = "SourceViewPanel"
-FilePath = "src\\Compiler.bf"
-CursorPos = 2852
-VertPos = 1696.0
+FilePath = "src\\BytecodeCompiler.bf"
+CursorPos = 2554
+VertPos = 675.0
 ProjectName = "VmScriptingFun"
 
 [[MainDockingFrame.DockedWidgets.DockedWidgets.DockedWidgets.Tabs]]
@@ -89,7 +93,7 @@ TabLabel = "Enums.bf"
 TabWidth = 83.0
 Type = "SourceViewPanel"
 FilePath = "src\\Enums.bf"
-CursorPos = 670
+CursorPos = 1248
 ProjectName = "VmScriptingFun"
 
 [[MainDockingFrame.DockedWidgets.DockedWidgets.DockedWidgets.Tabs]]

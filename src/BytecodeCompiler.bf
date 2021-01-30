@@ -4,7 +4,7 @@ using System;
 namespace VmScriptingFun
 {
 	//Converts scripts to bytecode
-	public class Compiler
+	public class BytecodeCompiler
 	{
 		//Operation precence. Lower values have lower precedence.
 		private enum Precedence
@@ -25,11 +25,11 @@ namespace VmScriptingFun
 		//Rule for parsing a specific token
 		private struct ParseRule
 		{
-			public readonly function void(VmScriptingFun.Compiler this) Prefix;
-			public readonly function void(VmScriptingFun.Compiler this) Infix;
+			public readonly function void(BytecodeCompiler this) Prefix;
+			public readonly function void(BytecodeCompiler this) Infix;
 			public readonly Precedence PrecedenceLevel;
 
-			public this(function void(VmScriptingFun.Compiler this) prefix, function void(VmScriptingFun.Compiler this) infix, Precedence precedenceLevel)
+			public this(function void(VmScriptingFun.BytecodeCompiler this) prefix, function void(VmScriptingFun.BytecodeCompiler this) infix, Precedence precedenceLevel)
 			{
 				Prefix = prefix;
 				Infix = infix;
