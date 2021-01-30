@@ -2,7 +2,7 @@
 Stack based VM written in [Beef](https://www.beeflang.org/). For fun/learning purposes.
 
 ## Syntax
-- Common arithmetic operators (-, +, *, /) including unary -.
+- Common binary arithmetic operators `-`, `+`, `*`, `/` and unary `-`
 - Parentheses for precedence control.
 
 ## Sources
