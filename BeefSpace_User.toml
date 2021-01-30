@@ -1,7 +1,7 @@
 FileVersion = 1
-LastConfig = "Debug"
+LastConfig = "Release"
 LastPlatform = "Win64"
-RecentFilesList = ["src\\Tokenizer.bf", "src\\Enums.bf", "src\\VM.bf", "src\\Token.bf", "src\\Program.bf", "src\\VMConfig.bf"]
+RecentFilesList = ["src\\Compiler.bf", "src\\VM.bf", "src\\Tokenizer.bf", "src\\Enums.bf", "src\\Program.bf", "src\\Token.bf", "src\\VMConfig.bf"]
 
 [MainWindow]
 X = 2584
@@ -23,8 +23,8 @@ SplitType = 2
 
 [[MainDockingFrame.DockedWidgets.DockedWidgets]]
 RequestedWidth = 350.0
-RequestedHeight = 696.4
-SizePriority = 696.4
+RequestedHeight = 713.0
+SizePriority = 713.0
 Type = "DockingFrame"
 SplitType = 1
 
@@ -42,9 +42,9 @@ Type = "ProjectPanel"
 [[MainDockingFrame.DockedWidgets.DockedWidgets.DockedWidgets]]
 IsFillWidget = true
 Permanent = true
-RequestedWidth = 1081.1
+RequestedWidth = 1531.0
 RequestedHeight = 693.34
-SizePriority = 1081.1
+SizePriority = 1531.0
 DefaultDocumentsTabbedView = true
 Type = "TabbedView"
 
@@ -53,8 +53,8 @@ TabLabel = "Program.bf"
 TabWidth = 96.0
 Type = "SourceViewPanel"
 FilePath = "src\\Program.bf"
-CursorPos = 855
-VertPos = 90.0
+CursorPos = 785
+VertPos = 1170.0
 ProjectName = "VmScriptingFun"
 
 [[MainDockingFrame.DockedWidgets.DockedWidgets.DockedWidgets.Tabs]]
@@ -62,18 +62,26 @@ TabLabel = "VM.bf"
 TabWidth = 65.0
 Type = "SourceViewPanel"
 FilePath = "src\\VM.bf"
-CursorPos = 2922
-VertPos = 1726.0
+CursorPos = 2009
+VertPos = 720.0
 ProjectName = "VmScriptingFun"
 
 [[MainDockingFrame.DockedWidgets.DockedWidgets.DockedWidgets.Tabs]]
 Active = true
+TabLabel = "Compiler.bf"
+TabWidth = 107.0
+Type = "SourceViewPanel"
+FilePath = "src\\Compiler.bf"
+CursorPos = 2852
+VertPos = 1696.0
+ProjectName = "VmScriptingFun"
+
+[[MainDockingFrame.DockedWidgets.DockedWidgets.DockedWidgets.Tabs]]
 TabLabel = "Tokenizer.bf"
 TabWidth = 109.0
 Type = "SourceViewPanel"
 FilePath = "src\\Tokenizer.bf"
-CursorPos = 2585
-VertPos = 1395.0
+CursorPos = 2605
 ProjectName = "VmScriptingFun"
 
 [[MainDockingFrame.DockedWidgets.DockedWidgets.DockedWidgets.Tabs]]
@@ -81,7 +89,7 @@ TabLabel = "Enums.bf"
 TabWidth = 83.0
 Type = "SourceViewPanel"
 FilePath = "src\\Enums.bf"
-CursorPos = 1006
+CursorPos = 670
 ProjectName = "VmScriptingFun"
 
 [[MainDockingFrame.DockedWidgets.DockedWidgets.DockedWidgets.Tabs]]
@@ -89,7 +97,7 @@ TabLabel = "Token.bf"
 TabWidth = 89.0
 Type = "SourceViewPanel"
 FilePath = "src\\Token.bf"
-CursorPos = 266
+CursorPos = 320
 ProjectName = "VmScriptingFun"
 
 [[MainDockingFrame.DockedWidgets.DockedWidgets.DockedWidgets.Tabs]]

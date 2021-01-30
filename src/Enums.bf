@@ -8,10 +8,13 @@ namespace VmScriptingFun
 		SetY, //Pop value off top of stack and set y with it. Preset value for basic vm testing. Will be removed when variables are a thing.
 		Add, //Pop top two values from the stack. Add together. Push result onto stack.
 		Subtract, //Pop top two values from the stack. Subtract together. Push result onto stack.
+		Multiply, //Pop top two values from the stack. Multiply together. Push result onto stack.
+		Divide, //Pop top two values from the stack. Divide first value by second. Push result onto stack.
 		Print, //Print value of variable at the top of the stack
 		TestPrint, //Print x and y vm testing values
 		Value, //Push value onto the stack. 4 byte unsigned integer follows it in bytecode blob
-		Pop //Pop value off the top of stack
+		Pop, //Pop value off the top of stack
+		Negate //Negate value at the top of the stack
 	}
 
 	public enum TokenType
@@ -20,7 +23,7 @@ namespace VmScriptingFun
 		None,
 
 		//Single character tokens
-		ParenthesesLeft, ParenthesesRight, Equals, Plus, Minus, Multiply, Divide, Semicolon,
+		ParenthesesLeft, ParenthesesRight, Equals, Plus, Minus, Asterisk, Slash, Semicolon,
 
 		//Two character tokens
 

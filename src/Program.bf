@@ -16,19 +16,8 @@ namespace VmScriptingFun
 
 			//Load and parse source code file
 			var sourceString = File.ReadAllText(scope $"{BuildConfig.AssetsBasePath}/Test0.script", .. scope String());
+			Console.WriteLine("Tokenizing source code:");
 			vm.Parse(sourceString);
-
-			//Equal to: X = (10 + 15) - (2 + 3)
-			vm.AddValueBytecode(2);
-			vm.AddValueBytecode(3);
-			vm.AddBytecode(.Add);
-			vm.AddValueBytecode(15);
-			vm.AddValueBytecode(10);
-			vm.AddBytecode(.Add);
-			vm.AddBytecode(.Subtract);
-			vm.AddBytecode(.Print);
-			vm.AddBytecode(.SetX);
-			vm.AddBytecode(.TestPrint);
 
 			Console.WriteLine("\nInterpreting bytecode... ");
 			vm.Interpret();
@@ -65,7 +54,7 @@ namespace VmScriptingFun
 			}
 
 			//Benchmark VM interpreter speed
-			BenchmarkVm(vm);
+			BenchmarkVm(vm, sourceString);
 
 			//Wait for input so the console doesn't close immediately
 			Console.WriteLine("\nPress any key to exit.");
@@ -73,21 +62,9 @@ namespace VmScriptingFun
 		}
 
 		//Benchmark VM interpreter speed
-		public static void BenchmarkVm(VM vm)
+		public static void BenchmarkVm(VM vm, StringView sourceString)
 		{
-			//Custom bytecode for benchmarks. No prints since they slow things down immensely
 			//Main purpose of benchmarks is to test the performance effects of different vm changes/optimizations
-			//Equal to: X = (10 + 15) - (2 + 3)
-			vm.ClearBytecode();
-			vm.AddValueBytecode(2);
-			vm.AddValueBytecode(3);
-			vm.AddBytecode(.Add);
-			vm.AddValueBytecode(15);
-			vm.AddValueBytecode(10);
-			vm.AddBytecode(.Add);
-			vm.AddBytecode(.Subtract);
-			vm.AddBytecode(.SetX);
-
 			u32 numBenchmarkRuns = 5000;
 			var timer = scope Stopwatch(false);
 			var times = scope List<f64>(); //Sample times in ms
@@ -95,7 +72,9 @@ namespace VmScriptingFun
 			for(u32 j = 0; j < numBenchmarkRuns; j++)
 			{
 				vm.ClearStack();
+				vm.ClearBytecode();
 				timer.Restart();
+				vm.Parse(sourceString);
 				vm.Interpret();
 				timer.Stop();
 				times.Add(timer.Elapsed.TotalMilliseconds);

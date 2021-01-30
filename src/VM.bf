@@ -13,7 +13,7 @@ namespace VmScriptingFun
 		private List<Bytecode> _binary = new List<Bytecode>() ~delete _; //Binary blob that the vm runs
 
 		//Classes used for parsing scripts and converting them to bytecode
-		private Tokenizer _tokenizer = new Tokenizer() ~delete _;
+		private VmScriptingFun.Compiler _compiler = new VmScriptingFun.Compiler() ~delete _;
 
 		//Test values used for VM dev. Will be removed once it has variables
 		public i32 X = 0;
@@ -63,14 +63,24 @@ namespace VmScriptingFun
 					Y = Pop();
 					break;
 				case .Add:
-					i32 a = Pop();
 					i32 b = Pop();
+					i32 a = Pop();
 					Push(a + b);
 					break;
 				case .Subtract:
-					i32 a = Pop();
 					i32 b = Pop();
+					i32 a = Pop();
 					Push((i32)(a - b)); //Todo: Why is a u32 - u32 a i64
+					break;
+				case .Multiply:
+					i32 b = Pop();
+					i32 a = Pop();
+					Push(a * b);
+					break;
+				case .Divide:
+					i32 b = Pop();
+					i32 a = Pop();
+					Push(a / b);
 					break;
 				case .Print:
 					Console.WriteLine($"Top of stack: {GetStackTop()}");
@@ -86,6 +96,9 @@ namespace VmScriptingFun
 				case .Pop:
 					Pop();
 					break;
+				case .Negate:
+					Push(-Pop());
+					break;
 				default:
 					break;
 				}
@@ -94,12 +107,12 @@ namespace VmScriptingFun
 			}
 		}
 
-		public void AddBytecode(Bytecode bytecode)
+		public void Emit(Bytecode bytecode)
 		{
 			_binary.Add(bytecode);
 		}
 
-		public void AddValueBytecode(i32 value)
+		public void EmitValue(i32 value)
 		{
 			//Ensure there's enough for the value bytecode and 4 byte value
 			if(_binary.Capacity < _binary.Count + 5)
@@ -127,18 +140,9 @@ namespace VmScriptingFun
 		}
 
 		//Parse script and generate bytecode from it
-		public void Parse(String source)
+		public void Parse(StringView source)
 		{
-			Console.WriteLine("Tokenizing source code:");
-
-			//Output tokens for testing purposes. Don't have a use for them yet.
-			_tokenizer.SetSource(source);
-			var token = _tokenizer.Next();
-			while(token.Type != .Eof)
-			{
-				Console.WriteLine($"\r\t\t\t\t'{token.Value}'    \r\t{token.Type.ToString(.. scope String())} ");
-				token = _tokenizer.Next();
-			}
+			_compiler.Parse(_binary, source);
 		}
 	}
 }
