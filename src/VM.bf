@@ -12,6 +12,9 @@ namespace VmScriptingFun
 		//Todo: Move this into a struct that is passed to the VM
 		private List<Bytecode> _binary = new List<Bytecode>() ~delete _; //Binary blob that the vm runs
 
+		//Classes used for parsing scripts and converting them to bytecode
+		private Tokenizer _tokenizer = new Tokenizer() ~delete _;
+
 		//Test values used for VM dev. Will be removed once it has variables
 		public i32 X = 0;
 		public i32 Y = 0;
@@ -121,6 +124,21 @@ namespace VmScriptingFun
 		public void ClearBytecode()
 		{
 			_binary.Clear();
+		}
+
+		//Parse script and generate bytecode from it
+		public void Parse(String source)
+		{
+			Console.WriteLine("Tokenizing source code:");
+
+			//Output tokens for testing purposes. Don't have a use for them yet.
+			_tokenizer.SetSource(source);
+			var token = _tokenizer.Next();
+			while(token.Type != .Eof)
+			{
+				Console.WriteLine($"    {token.Type.ToString(.. scope String())} | '{token.Value}'");
+				token = _tokenizer.Next();
+			}
 		}
 	}
 }

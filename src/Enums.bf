@@ -13,4 +13,23 @@ namespace VmScriptingFun
 		Value, //Push value onto the stack. 4 byte unsigned integer follows it in bytecode blob
 		Pop //Pop value off the top of stack
 	}
+
+	public enum TokenType
+	{
+		//Default value
+		None,
+
+		//Single character tokens
+		ParenthesesLeft, ParenthesesRight, Equals, Plus, Minus, Multiply, Divide, Semicolon,
+
+		//Two character tokens
+
+		//Keywords
+
+		//Literals
+		Identifier, Number,
+
+		//Special
+		Eof, Error
+	}
 }

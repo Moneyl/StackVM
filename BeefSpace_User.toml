@@ -1,11 +1,11 @@
 FileVersion = 1
-LastConfig = "Release"
+LastConfig = "Debug"
 LastPlatform = "Win64"
-RecentFilesList = ["src\\VM.bf", "src\\Program.bf", "c:\\Program Files\\BeefLang\\BeefLibs\\corlib\\src\\TimeSpan.bf", "src\\VMConfig.bf", "src\\Enums.bf"]
+RecentFilesList = ["src\\Tokenizer.bf", "src\\Enums.bf", "src\\VM.bf", "src\\Token.bf", "src\\Program.bf", "src\\VMConfig.bf"]
 
 [MainWindow]
-X = 2594
-Y = 3
+X = 2584
+Y = 0
 Width = 1200
 Height = 1024
 ShowKind = "Maximized"
@@ -53,25 +53,27 @@ TabLabel = "Program.bf"
 TabWidth = 96.0
 Type = "SourceViewPanel"
 FilePath = "src\\Program.bf"
-CursorPos = 2631
-VertPos = 826.0
+CursorPos = 855
+VertPos = 90.0
 ProjectName = "VmScriptingFun"
 
 [[MainDockingFrame.DockedWidgets.DockedWidgets.DockedWidgets.Tabs]]
-TabLabel = "VMConfig.bf"
-TabWidth = 103.0
-Type = "SourceViewPanel"
-FilePath = "src\\VMConfig.bf"
-ProjectName = "VmScriptingFun"
-
-[[MainDockingFrame.DockedWidgets.DockedWidgets.DockedWidgets.Tabs]]
-Active = true
 TabLabel = "VM.bf"
 TabWidth = 65.0
 Type = "SourceViewPanel"
 FilePath = "src\\VM.bf"
-CursorPos = 2786
-VertPos = 631.0
+CursorPos = 2922
+VertPos = 1726.0
+ProjectName = "VmScriptingFun"
+
+[[MainDockingFrame.DockedWidgets.DockedWidgets.DockedWidgets.Tabs]]
+Active = true
+TabLabel = "Tokenizer.bf"
+TabWidth = 109.0
+Type = "SourceViewPanel"
+FilePath = "src\\Tokenizer.bf"
+CursorPos = 2585
+VertPos = 1395.0
 ProjectName = "VmScriptingFun"
 
 [[MainDockingFrame.DockedWidgets.DockedWidgets.DockedWidgets.Tabs]]
@@ -79,7 +81,22 @@ TabLabel = "Enums.bf"
 TabWidth = 83.0
 Type = "SourceViewPanel"
 FilePath = "src\\Enums.bf"
-CursorPos = 614
+CursorPos = 1006
+ProjectName = "VmScriptingFun"
+
+[[MainDockingFrame.DockedWidgets.DockedWidgets.DockedWidgets.Tabs]]
+TabLabel = "Token.bf"
+TabWidth = 89.0
+Type = "SourceViewPanel"
+FilePath = "src\\Token.bf"
+CursorPos = 266
+ProjectName = "VmScriptingFun"
+
+[[MainDockingFrame.DockedWidgets.DockedWidgets.DockedWidgets.Tabs]]
+TabLabel = "VMConfig.bf"
+TabWidth = 103.0
+Type = "SourceViewPanel"
+FilePath = "src\\VMConfig.bf"
 ProjectName = "VmScriptingFun"
 
 [[MainDockingFrame.DockedWidgets.DockedWidgets]]
@@ -112,7 +129,6 @@ AutoResize = "Auto_Mul8"
 RequestedWidth = 300.0
 
 [[MainDockingFrame.DockedWidgets.DockedWidgets.DockedWidgets.Tabs]]
-Active = true
 TabLabel = "Watch"
 TabWidth = 86.0
 Type = "WatchPanel"
@@ -120,6 +136,7 @@ Columns = [{Width = 200.0}, {Width = 200.0}, {Width = 200.0}]
 Items = ["vm.[Friend]_stackPos", ""]
 
 [[MainDockingFrame.DockedWidgets.DockedWidgets.DockedWidgets.Tabs]]
+Active = true
 TabLabel = "Auto"
 TabWidth = 77.0
 Type = "AutoWatchPanel"

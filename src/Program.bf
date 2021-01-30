@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Diagnostics;
+using System.IO;
 using System;
 
 namespace VmScriptingFun
@@ -13,6 +14,10 @@ namespace VmScriptingFun
 			Console.WriteLine($"Created VM. Stack size: {vm.[Friend]_binary.Count}");
 			Console.WriteLine("Creating binary...\n");
 
+			//Load and parse source code file
+			var sourceString = File.ReadAllText(scope $"{BuildConfig.AssetsBasePath}/Test0.script", .. scope String());
+			vm.Parse(sourceString);
+
 			//Equal to: X = (10 + 15) - (2 + 3)
 			vm.AddValueBytecode(2);
 			vm.AddValueBytecode(3);
@@ -25,7 +30,7 @@ namespace VmScriptingFun
 			vm.AddBytecode(.SetX);
 			vm.AddBytecode(.TestPrint);
 
-			Console.WriteLine("Interpreting bytecode... ");
+			Console.WriteLine("\nInterpreting bytecode... ");
 			vm.Interpret();
 			Console.WriteLine("Done!\n");
 
@@ -72,6 +77,7 @@ namespace VmScriptingFun
 		{
 			//Custom bytecode for benchmarks. No prints since they slow things down immensely
 			//Main purpose of benchmarks is to test the performance effects of different vm changes/optimizations
+			//Equal to: X = (10 + 15) - (2 + 3)
 			vm.ClearBytecode();
 			vm.AddValueBytecode(2);
 			vm.AddValueBytecode(3);
