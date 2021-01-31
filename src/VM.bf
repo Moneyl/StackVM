@@ -6,20 +6,19 @@ namespace VmScriptingFun
 	//Stack based virtual machine. Runs bytecode
 	public class VM
 	{
-		private i32[VMConfig.StackSize] _stack = .(); //Contains temporary variables and state. Data stored LIFO.
+
+
+		private VmValue[VMConfig.StackSize] _stack = .(); //Contains temporary variables and state. Data stored LIFO.
 		private u32 _stackPos = 0; //Current position in the stack
 
-		//Todo: Move this into a struct that is passed to the VM
-		private List<Bytecode> _binary = new List<Bytecode>() ~delete _; //Binary blob that the vm runs
+		//Binary blob executed by the VM. Contains constants and bytecodes
+		private BinaryBlob _binary = new BinaryBlob();
+		private u32 _binaryPos = 0;
 
-		//Classes used for parsing scripts and converting them to bytecode
+		//Converts a script string to bytecode
 		private BytecodeCompiler _compiler = new BytecodeCompiler() ~delete _;
 
-		//Test values used for VM dev. Will be removed once it has variables
-		public i32 X = 0;
-		public i32 Y = 0;
-
-		private void Push(i32 value)
+		private void Push(VmValue value)
 		{
 			//Ensure no stack overflow
 #if DEBUG
@@ -29,7 +28,7 @@ namespace VmScriptingFun
 			_stack[_stackPos++] = value;
 		}
 
-		private i32 Pop()
+		private VmValue Pop()
 		{
 			//Ensure stack isn't empty
 #if DEBUG
@@ -38,111 +37,180 @@ namespace VmScriptingFun
 			return _stack[--_stackPos];
 		}
 
-		private i32 GetStackTop()
+		private VmValue GetStackTop()
 		{
-			i32 value = Pop();
+			VmValue value = Pop();
 			Push(value);
 			return value;
 		}
 
-		public void Interpret()
+		public VmResult Interpret()
 		{
 			//Loop through all bytecodes and interpret them
-			u32 i = 0;
-			while(i < _binary.Count)
+			_binaryPos = 0;
+			while(_binaryPos < _binary.Bytecodes.Count)
 			{
 				//Todo: See if array of function pointers indexed by bytecode value is faster/more reliably fast
 				//Interpret bytecode
-				Bytecode bytecode = _binary[i];
+				Bytecode bytecode = _binary.Bytecodes[_binaryPos];
 				switch(bytecode)
 				{
-				case .SetX:
-					X = Pop();
-					break;
-				case .SetY:
-					Y = Pop();
-					break;
 				case .Add:
-					i32 b = Pop();
-					i32 a = Pop();
-					Push(a + b);
+					VmValue b = Pop();
+					VmValue a = Pop();
+					if(!a.IsNumber() || !b.IsNumber())
+					{
+						RuntimeError(scope $"Operands for add bytecode must be a number. Bytecode: {bytecode}, a: {a}, b: {b}");
+						return .RuntimeError;
+					}
+					Push(.Number(a.AsNumber() + b.AsNumber()));
 					break;
 				case .Subtract:
-					i32 b = Pop();
-					i32 a = Pop();
-					Push((i32)(a - b)); //Todo: Why is a u32 - u32 a i64
+					VmValue b = Pop();
+					VmValue a = Pop();
+					if(!a.IsNumber() || !b.IsNumber())
+					{
+						RuntimeError(scope $"Operands for subtract bytecode must be a number. Bytecode: {bytecode}, a: {a}, b: {b}");
+						return .RuntimeError;
+					}
+					Push(.Number(a.AsNumber() - b.AsNumber()));
 					break;
 				case .Multiply:
-					i32 b = Pop();
-					i32 a = Pop();
-					Push(a * b);
+					VmValue b = Pop();
+					VmValue a = Pop();
+					if(!a.IsNumber() || !b.IsNumber())
+					{
+						RuntimeError(scope $"Operands for multiply bytecode must be a number. Bytecode: {bytecode}, a: {a}, b: {b}");
+						return .RuntimeError;
+					}
+					Push(.Number(a.AsNumber() * b.AsNumber()));
 					break;
 				case .Divide:
-					i32 b = Pop();
-					i32 a = Pop();
-					Push(a / b);
-					break;
-				case .Print:
-					Console.WriteLine($"Top of stack: {GetStackTop()}");
-					break;
-				case .TestPrint:
-					Console.WriteLine($"X: {X}, Y: {Y}");
-					break;
-				case .Value:
-					i32 value = *(i32*)&_binary[i + 1];
-					i += 4;
-					Push(value);
-					break;
-				case .Pop:
-					Pop();
+					VmValue b = Pop();
+					VmValue a = Pop();
+					if(!a.IsNumber() || !b.IsNumber())
+					{
+						RuntimeError(scope $"Operands for divide bytecode must be a number. Bytecode: {bytecode}, a: {a}, b: {b}");
+						return .RuntimeError;
+					}
+					Push(.Number(a.AsNumber() / b.AsNumber()));
 					break;
 				case .Negate:
-					Push(-Pop());
+					VmValue value = Pop();
+					if(!value.IsNumber())
+					{
+						RuntimeError(scope $"Operand for negate bytecode must be a number. Bytecode: {bytecode}, Value: {value}");
+						return .RuntimeError;
+					}
+					Push(.Number(-value.AsNumber()));
 					break;
+				case .Not:
+					Push(.Bool(Pop().IsFalsey()));
+					break;
+				case .EqualEqual:
+					VmValue b = Pop();
+					VmValue a = Pop();
+					Push(.Bool(a.EqualTo(b)));
+
+					break;
+				case .GreaterThan:
+					VmValue b = Pop();
+					VmValue a = Pop();
+					if(!a.IsNumber() || !b.IsNumber())
+					{
+						RuntimeError(scope $"Operands for greater than bytecode must be a number. Bytecode: {bytecode}, a: {a}, b: {b}");
+						return .RuntimeError;
+					}
+					Push(.Bool(a.AsNumber() > b.AsNumber()));
+					break;
+				case .LessThan:
+					VmValue b = Pop();
+					VmValue a = Pop();
+					if(!a.IsNumber() || !b.IsNumber())
+					{
+						RuntimeError(scope $"Operands for less than bytecode must be a number. Bytecode: {bytecode}, a: {a}, b: {b}");
+						return .RuntimeError;
+					}
+					Push(.Bool(a.AsNumber() < b.AsNumber()));
+
+					break;
+				case .Value:
+						u32 constantIndex = *(u32*)&_binary.Bytecodes[_binaryPos + 1];
+						_binaryPos += 4;
+						Push(_binary.Constants[constantIndex]);
+						break;
+				case .Pop:
+						Pop();
+						break;
 				default:
 					break;
 				}
 
-				i++;
+				_binaryPos++;
 			}
+
+			return .Ok;
 		}
 
 		public void Emit(Bytecode bytecode)
 		{
-			_binary.Add(bytecode);
+			_binary.Emit(bytecode);
 		}
 
-		public void EmitValue(i32 value)
+		public void EmitValue(VmValue value)
 		{
-			//Ensure there's enough for the value bytecode and 4 byte value
-			if(_binary.Capacity < _binary.Count + 5)
-				_binary.Reserve(_binary.Capacity + 5);
-
-			//Add value bytecode
-			_binary.Add(.Value);
-			//Add value by interpreting next 4 bytes as a single u32
-			i32* valuePtr = (i32*)((&_binary.Back) + 1);
-			*valuePtr = value;
-			_binary.[Friend]mSize += 4;
+			_binary.EmitValue(value);
 		}
 
-		//Reset stack state
-		public void ClearStack()
+		//Reset vm state. Clear stack, bytecode, and constants
+		public void Reset()
 		{
-			//Don't even need to clear values. They'll be overwritten as values are pushed onto the stack.
+			_binary.Reset();
 			_stackPos = 0;
 		}
 
-		//Clear all bytecode
-		public void ClearBytecode()
+		//Parse script and generate bytecode from it
+		public VmResult Parse(StringView source)
 		{
-			_binary.Clear();
+			return _compiler.Parse(_binary, source);
 		}
 
-		//Parse script and generate bytecode from it
-		public void Parse(StringView source)
+		public void PrintState()
 		{
-			_compiler.Parse(_binary, source);
+			//Todo: Move into VM
+			Console.WriteLine("Writing VM state:");
+			Console.WriteLine("Stack state:");
+			for(u32 i = 0; i < _stackPos; i++)
+			{
+				VmValue value = _stack[i];
+				Console.WriteLine($"    [{i}]: {value}");
+			}
+
+			u32 i = 0;
+			u32 bytecodeCount = 0;
+			Console.WriteLine("Disassembled bytecode:");
+			while(i < _binary.Bytecodes.Count)
+			{
+				Bytecode bytecode = _binary.Bytecodes[i];
+				if(bytecode == .Value)
+				{
+					u32 constantIndex = *(u32*)&_binary.Bytecodes[i + 1];
+					VmValue value = _binary.Constants[constantIndex];
+					Console.WriteLine($"    [{bytecodeCount}]: {bytecode.ToString(.. scope String())}, {value}");
+					i += 5;
+				}
+				else
+				{
+					Console.WriteLine($"    [{bytecodeCount}]: {bytecode.ToString(.. scope String())}");
+					i++;
+				}
+				bytecodeCount++;
+			}
+		}
+
+		private void RuntimeError(StringView message)
+		{
+			Console.WriteLine($"[Line {_binary.Lines[_binaryPos]}] Runtime error: '{message}'");
 		}
 	}
 }

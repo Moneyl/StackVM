@@ -1,9 +1,6 @@
-# Stack based VM
-Stack based VM written in [Beef](https://www.beeflang.org/). For fun/learning purposes.
+# Stack VM
+Stack based VM written in [Beef](https://www.beeflang.org/). For fun/learning purposes. The design and implementation of the VM is based on the second half of [Crafting Interpreters](https://craftinginterpreters.com/). Though it's not intended to be a perfect recreation of clox so it may vary in areas.
 
 ## Syntax
-- Common binary arithmetic operators `-`, `+`, `*`, `/` and unary `-`
-- Parentheses for precedence control.
-
-## Sources
-The design and implementation of the VM is based on the second half of [Crafting Interpreters](https://craftinginterpreters.com/). It's not intended to be a perfect recreation of clox so it may vary in areas.
+- Common binary arithmetic operators `-`, `+`, `*`, `/`, unary `-`, parentheses for precedence control.
+- Common comparison and logic operators `!`, `==`, `!=`, `>`, `<`, `>=`, and `<=`.

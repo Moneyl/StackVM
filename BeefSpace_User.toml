@@ -1,11 +1,11 @@
 FileVersion = 1
 LastConfig = "Debug"
 LastPlatform = "Win64"
-RecentFilesList = ["src\\BytecodeCompiler.bf", "src\\Tokenizer.bf", "src\\VM.bf", "src\\Program.bf", "Disassembly", "src\\Enums.bf", "src\\Token.bf", "src\\VMConfig.bf"]
+RecentFilesList = ["src\\VM.bf", "src\\BytecodeCompiler.bf", "src\\Enums.bf", "src\\Token.bf", "src\\Tokenizer.bf", "src\\VMConfig.bf", "src\\BinaryBlob.bf", "src\\Program.bf"]
 
 [MainWindow]
-X = 323
-Y = 1010
+X = 858
+Y = -33
 Width = 1200
 Height = 1024
 ShowKind = "Maximized"
@@ -49,44 +49,47 @@ DefaultDocumentsTabbedView = true
 Type = "TabbedView"
 
 [[MainDockingFrame.DockedWidgets.DockedWidgets.DockedWidgets.Tabs]]
-TabLabel = "Disassembly"
-TabWidth = 112.0
-Type = "DisassemblyPanel"
-
-[[MainDockingFrame.DockedWidgets.DockedWidgets.DockedWidgets.Tabs]]
 TabLabel = "Program.bf"
 TabWidth = 96.0
 Type = "SourceViewPanel"
 FilePath = "src\\Program.bf"
-CursorPos = 984
-ProjectName = "VmScriptingFun"
-
-[[MainDockingFrame.DockedWidgets.DockedWidgets.DockedWidgets.Tabs]]
-TabLabel = "VM.bf"
-TabWidth = 65.0
-Type = "SourceViewPanel"
-FilePath = "src\\VM.bf"
-CursorPos = 2298
-VertPos = 1080.0
+CursorPos = 1031
 ProjectName = "VmScriptingFun"
 
 [[MainDockingFrame.DockedWidgets.DockedWidgets.DockedWidgets.Tabs]]
 Active = true
+TabLabel = "VM.bf"
+TabWidth = 65.0
+Type = "SourceViewPanel"
+FilePath = "src\\VM.bf"
+CursorPos = 2968
+VertPos = 1215.0
+ProjectName = "VmScriptingFun"
+
+[[MainDockingFrame.DockedWidgets.DockedWidgets.DockedWidgets.Tabs]]
 TabLabel = "BytecodeCompiler.bf"
-TabWidth = 160.0
+TabWidth = 150.0
 Type = "SourceViewPanel"
 FilePath = "src\\BytecodeCompiler.bf"
-CursorPos = 4331
-VertPos = 1845.0
+CursorPos = 6238
+VertPos = 2280.0
 ProjectName = "VmScriptingFun"
 
 [[MainDockingFrame.DockedWidgets.DockedWidgets.DockedWidgets.Tabs]]
 TabLabel = "Tokenizer.bf"
-TabWidth = 109.0
+TabWidth = 99.0
 Type = "SourceViewPanel"
 FilePath = "src\\Tokenizer.bf"
-CursorPos = 1247
-VertPos = 315.0
+CursorPos = 964
+VertPos = 270.0
+ProjectName = "VmScriptingFun"
+
+[[MainDockingFrame.DockedWidgets.DockedWidgets.DockedWidgets.Tabs]]
+TabLabel = "BinaryBlob.bf"
+TabWidth = 106.0
+Type = "SourceViewPanel"
+FilePath = "src\\BinaryBlob.bf"
+CursorPos = 438
 ProjectName = "VmScriptingFun"
 
 [[MainDockingFrame.DockedWidgets.DockedWidgets.DockedWidgets.Tabs]]
@@ -94,15 +97,16 @@ TabLabel = "Enums.bf"
 TabWidth = 83.0
 Type = "SourceViewPanel"
 FilePath = "src\\Enums.bf"
-CursorPos = 1248
+CursorPos = 2250
+VertPos = 945.0
 ProjectName = "VmScriptingFun"
 
 [[MainDockingFrame.DockedWidgets.DockedWidgets.DockedWidgets.Tabs]]
 TabLabel = "Token.bf"
-TabWidth = 89.0
+TabWidth = 79.0
 Type = "SourceViewPanel"
 FilePath = "src\\Token.bf"
-CursorPos = 320
+CursorPos = 207
 ProjectName = "VmScriptingFun"
 
 [[MainDockingFrame.DockedWidgets.DockedWidgets.DockedWidgets.Tabs]]

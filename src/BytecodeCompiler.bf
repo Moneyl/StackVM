@@ -38,30 +38,41 @@ namespace VmScriptingFun
 		}
 
 		private Tokenizer _tokenizer = new Tokenizer() ~delete _;
-		private List<Bytecode> _binary;
+		private BinaryBlob _binary;
 		private Token _current = .(.None, "None", 0);
 		private Token _previous;
 		private bool _hadError = false;
-		private ParseRule[13] _parseRules = .();
+		private ParseRule[24] _parseRules = .();
 
 		public this()
 		{
 			_parseRules[(u32)TokenType.None] = .(null, null, .None);
 			_parseRules[(u32)TokenType.ParenthesesLeft] = .(=> Grouping, null, .None);
 			_parseRules[(u32)TokenType.ParenthesesRight] = .(null, null, .None);
-			_parseRules[(u32)TokenType.Equals] = .(null, null, .None);
+			_parseRules[(u32)TokenType.Equal] = .(null, null, .None);
+			_parseRules[(u32)TokenType.NotEqual] = .(null, => Binary, .Equality);
 			_parseRules[(u32)TokenType.Plus] = .(null, => Binary, .Term);
 			_parseRules[(u32)TokenType.Minus] = .(=> Unary, => Binary, .Term);
 			_parseRules[(u32)TokenType.Asterisk] = .(null, =>  Binary, .Factor);
 			_parseRules[(u32)TokenType.Slash] = .(null, => Binary, .Factor);
 			_parseRules[(u32)TokenType.Semicolon] = .(null, null, .None);
+			_parseRules[(u32)TokenType.ExclamationMark] = .(=> Unary, null, .None);
+			_parseRules[(u32)TokenType.GreaterThan] = .(null, => Binary, .Comparison);
+			_parseRules[(u32)TokenType.LessThan] = .(null, => Binary, .Comparison);
+			_parseRules[(u32)TokenType.GreaterThanOrEqual] = .(null, => Binary, .Comparison);
+			_parseRules[(u32)TokenType.LessThanOrEqual] = .(null, => Binary, .Comparison);
+			_parseRules[(u32)TokenType.EqualEqual] = .(null, => Binary, .Equality);
+			_parseRules[(u32)TokenType.True] = .(=> Literal, null, .None);
+			_parseRules[(u32)TokenType.False] = .(=> Literal, null, .None);
+			_parseRules[(u32)TokenType.Null] = .(=> Literal, null, .None);
 			_parseRules[(u32)TokenType.Identifier] = .(null, null, .None);
 			_parseRules[(u32)TokenType.Number] = .(=> Number, null, .None);
+			_parseRules[(u32)TokenType.String] = .(null, null, .None);
 			_parseRules[(u32)TokenType.Eof] = .(null, null, .None);
 			_parseRules[(u32)TokenType.Error] = .(null, null, .None);
 		}
 
-		public void Parse(List<Bytecode> binary, StringView source)
+		public VmResult Parse(BinaryBlob binary, StringView source)
 		{
 			//Output tokens for testing purposes. Don't have a use for them yet.
 			_binary = binary;
@@ -69,6 +80,8 @@ namespace VmScriptingFun
 			Advance();
 			Expression();
 			Consume(.Eof, "Expected end of expression.");
+
+			return _hadError ? .CompileError : .RuntimeError;
 		}
 
 		//Advance to next valid token
@@ -124,15 +137,34 @@ namespace VmScriptingFun
 		//Parse a number token
 		private void Number()
 		{
-			i32 value = i32.Parse(_previous.Value);
-			EmitValue(value);
+			f64 value = f64.Parse(_previous.Value);
+			EmitValue(.Number(value));
+		}
+
+		//Parse a literal (bool, null, string)
+		private void Literal()
+		{
+			switch(_previous.Type)
+			{
+			case .True:
+				EmitValue(.Bool(true));
+				break;
+			case .False:
+				EmitValue(.Bool(false));
+				break;
+			case .Null:
+				EmitValue(.Null);
+				break;
+			default:
+				return;
+			}
 		}
 
 		//Parse a set of grouping tokens (E.g. parentheses)
 		private void Grouping()
 		{
 			Expression();
-			Consume(.ParenthesesRight, "Expected ')' after expression.");
+			Consume(.ParenthesesRight, "Expected closing parentheses ')'.");
 		}
 
 		//Parse an expression
@@ -154,6 +186,9 @@ namespace VmScriptingFun
 			{
 		    case .Minus:
 				Emit(.Negate);
+				break;
+			case .ExclamationMark:
+				Emit(.Not);
 				break;
 		    default:
 		      return;
@@ -184,6 +219,26 @@ namespace VmScriptingFun
 				break;
 		    case .Slash:
 				Emit(.Divide);
+			case .NotEqual:
+				Emit(.EqualEqual);
+				Emit(.Not);
+				break;
+			case .EqualEqual:
+				Emit(.EqualEqual);
+				break;
+			case .GreaterThan:
+				Emit(.GreaterThan);
+				break;
+			case .GreaterThanOrEqual:
+				Emit(.LessThan);
+				Emit(.Not);
+				break;
+			case .LessThan:
+				Emit(.LessThan);
+				break;
+			case .LessThanOrEqual:
+				Emit(.GreaterThan);
+				Emit(.Not);
 				break;
 		    default:
 		      return;
@@ -198,22 +253,20 @@ namespace VmScriptingFun
 		//Emit bytecode
 		private void Emit(Bytecode bytecode)
 		{
-			_binary.Add(bytecode);
+			_binary.Emit(bytecode);
+			_binary.Lines.Add(_current.Line);
 		}
 
 		//Emit value bytecode followed by 4 byte signed integer
-		private void EmitValue(i32 value)
+		private void EmitValue(VmValue value)
 		{
-			//Ensure there's enough for the value bytecode and 4 byte value
-			if(_binary.Capacity < _binary.Count + 5)
-				_binary.Reserve(_binary.Capacity + 5);
-
-			//Add value bytecode
-			_binary.Add(.Value);
-			//Add value by interpreting next 4 bytes as a single u32
-			i32* valuePtr = (i32*)((&_binary.Back) + 1);
-			*valuePtr = value;
-			_binary.[Friend]mSize += 4;
+			_binary.EmitValue(value);
+			//Emit line 5 times since EmitValue takes up 5 bytes
+			_binary.Lines.Add(_current.Line);
+			_binary.Lines.Add(_current.Line);
+			_binary.Lines.Add(_current.Line);
+			_binary.Lines.Add(_current.Line);
+			_binary.Lines.Add(_current.Line);
 		}
 
 		//Report error at provided token

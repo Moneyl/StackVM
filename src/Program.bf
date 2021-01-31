@@ -11,49 +11,23 @@ namespace VmScriptingFun
 		{
 			var vm = new VM();
 			defer delete vm;
-			Console.WriteLine($"Created VM. Stack size: {vm.[Friend]_binary.Count}");
+			Console.WriteLine($"Created VM.");
 			Console.WriteLine("Creating binary...\n");
 
 			//Load and parse source code file
 			var sourceString = File.ReadAllText(scope $"{BuildConfig.AssetsBasePath}/Test0.script", .. scope String());
-			Console.WriteLine("Tokenizing source code:");
+			Console.WriteLine("Tokenizing source code...");
 			vm.Parse(sourceString);
 
-			Console.WriteLine("\nInterpreting bytecode... ");
+			Console.WriteLine("Interpreting bytecode... ");
 			vm.Interpret();
 			Console.WriteLine("Done!\n");
 
-			//Todo: Move into VM
-			Console.WriteLine("Writing VM state:");
-			Console.WriteLine("Stack state:");
-			for(u32 i = 0; i < vm.[Friend]_stackPos; i++)
-			{
-				i32 value = vm.[Friend]_stack[i];
-				Console.WriteLine($"    [{i}]: {value}");
-			}
-
-			//Todo: Move into VM
-			u32 i = 0;
-			u32 bytecodeCount = 0;
-			Console.WriteLine("Disassembled bytecode:");
-			while(i < vm.[Friend]_binary.Count)
-			{
-				Bytecode bytecode = vm.[Friend]_binary[i];
-				if(bytecode == .Value)
-				{
-					i32 value = *(i32*)&vm.[Friend]_binary[i + 1];
-					Console.WriteLine($"    [{bytecodeCount}]: {bytecode.ToString(.. scope String())}, {value}");
-					i += 5;
-				}
-				else
-				{
-					Console.WriteLine($"    [{bytecodeCount}]: {bytecode.ToString(.. scope String())}");
-					i++;
-				}
-				bytecodeCount++;
-			}
+			//Write internal state to console
+			vm.PrintState();
 
 			//Benchmark VM interpreter speed
+			Console.WriteLine("\nBenchmarking VM...");
 			BenchmarkVm(vm, sourceString);
 
 			//Wait for input so the console doesn't close immediately
@@ -71,8 +45,7 @@ namespace VmScriptingFun
 			times.Reserve(numBenchmarkRuns);
 			for(u32 j = 0; j < numBenchmarkRuns; j++)
 			{
-				vm.ClearStack();
-				vm.ClearBytecode();
+				vm.Reset();
 				timer.Restart();
 				vm.Parse(sourceString);
 				vm.Interpret();

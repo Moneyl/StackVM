@@ -34,6 +34,7 @@ namespace VmScriptingFun
 				if(IsIgnoredCharacter(character))
 					continue;
 
+				//TODO: Make mixin for adding two character tokens to shorten this switch
 				switch(character)
 				{
 				case '(':
@@ -41,7 +42,35 @@ namespace VmScriptingFun
 				case ')':
 					return .(.ParenthesesRight, ")", _line);
 				case '=':
-					return .(.Equals, "=", _line);
+					if(At("="))
+					{
+						_pos++;
+						return .(.EqualEqual, "==", _line);
+					}
+					else
+					{
+						return .(.Equal, "=", _line);
+					}
+				case '>':
+					if(At("="))
+					{
+						_pos++;
+						return .(.GreaterThanOrEqual, ">=", _line);
+					}
+					else
+					{
+						return .(.GreaterThan, ">", _line);
+					}
+				case '<':
+					if(At("="))
+					{
+						_pos++;
+						return .(.LessThanOrEqual, "<=", _line);
+					}
+					else
+					{
+						return .(.LessThan, "<", _line);
+					}
 				case '+':
 					return .(.Plus, "+", _line);
 				case '-':
@@ -52,13 +81,44 @@ namespace VmScriptingFun
 					return .(.Slash, "/", _line);
 				case ';':
 					return .(.Semicolon, ";", _line);
+				case '!':
+					if(At("="))
+					{
+						_pos++;
+						return .(.NotEqual, "!=", _line);
+					}
+					else
+					{
+						return .(.ExclamationMark, "!", _line);
+					}
+				case 't':
+					if(At("rue"))
+					{
+						_pos += 3;
+						return .(.True, "true", _line);
+					}
+					break;
+				case 'f':
+					if(At("alse"))
+					{
+						_pos += 4;
+						return .(.False, "false", _line);
+					}
+
+					break;
+				case 'n':
+					if(At("ull"))
+					{
+						_pos += 3;
+						return .(.Null, "null", _line);
+					}
 				default:
 					break;
 				}
 
 				//Attempt to read literal if not a keyword or operator
 				_pos--; //Decrease _pos to revert previous read
-				var maybeLiteral = TryReadLiteral(_source[_pos]);
+				var maybeLiteral = TryReadLiteralOrIdentifier(_source[_pos]);
 				if(maybeLiteral == .Err)
 					return .(.Error, "Invalid literal error", _line);
 				else
@@ -66,6 +126,16 @@ namespace VmScriptingFun
 			}
 
 			return .(.Eof, "EOF", _line);
+		}
+
+		//Returns true if the provided string is present at the current position
+		private bool At(StringView string)
+		{
+			if(_pos + string.Length - 1 > _source.Length)
+				return false;
+
+			var substring = _source.Substring(_pos, string.Length);
+			return string == substring;
 		}
 
 		//Returns true if the character is ignored by the tokenizer
@@ -97,34 +167,26 @@ namespace VmScriptingFun
 		}
 
 		//Attempts to read a literal token (number, identifier, string)
-		private Result<Token> TryReadLiteral(char8 character)
+		private Result<Token> TryReadLiteralOrIdentifier(char8 character)
 		{
-			TokenType tokenType = .None;
-
 			//Determine token type
-			if (IsNumber(character))
-			{
+			TokenType tokenType = .None;
+			if(character == '"')
+				tokenType = .String;
+			else if (IsNumber(character))
 				tokenType = .Number;
-			}
 			else if (IsAlpha(character))
-			{
 				tokenType = .Identifier;
-			}
 			else
-			{
 				return .Err;
-			}
 
 			//Get token sub string and return it
 			u32 identifierEnd = 0;
 			for (identifierEnd = _pos; identifierEnd < _source.Length; identifierEnd++)
-			{
 				if (IsInvalidIdentifierCharacter(_source[identifierEnd]))
-				{
 					break;
-				}
-			}
 
+			//Get substring and return token
 			u32 substringLength = identifierEnd - _pos;
 			_pos += substringLength;
 			return .Ok(.(tokenType, _source.Substring(_pos - substringLength, substringLength), _line));
