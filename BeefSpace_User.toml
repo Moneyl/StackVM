@@ -1,7 +1,7 @@
 FileVersion = 1
 LastConfig = "Debug"
 LastPlatform = "Win64"
-RecentFilesList = ["src\\VM.bf", "src\\BytecodeCompiler.bf", "src\\Enums.bf", "src\\Token.bf", "src\\Tokenizer.bf", "src\\VMConfig.bf", "src\\BinaryBlob.bf", "src\\Program.bf"]
+RecentFilesList = ["src\\BytecodeCompiler.bf", "src\\VM.bf", "src\\Enums.bf", "src\\Program.bf", "src\\Token.bf", "src\\Tokenizer.bf", "src\\VMConfig.bf", "src\\BinaryBlob.bf"]
 
 [MainWindow]
 X = 858
@@ -57,22 +57,22 @@ CursorPos = 1031
 ProjectName = "VmScriptingFun"
 
 [[MainDockingFrame.DockedWidgets.DockedWidgets.DockedWidgets.Tabs]]
-Active = true
 TabLabel = "VM.bf"
 TabWidth = 65.0
 Type = "SourceViewPanel"
 FilePath = "src\\VM.bf"
-CursorPos = 2968
-VertPos = 1215.0
+CursorPos = 1486
+VertPos = 90.0
 ProjectName = "VmScriptingFun"
 
 [[MainDockingFrame.DockedWidgets.DockedWidgets.DockedWidgets.Tabs]]
+Active = true
 TabLabel = "BytecodeCompiler.bf"
 TabWidth = 150.0
 Type = "SourceViewPanel"
 FilePath = "src\\BytecodeCompiler.bf"
-CursorPos = 6238
-VertPos = 2280.0
+CursorPos = 2915
+VertPos = 705.0
 ProjectName = "VmScriptingFun"
 
 [[MainDockingFrame.DockedWidgets.DockedWidgets.DockedWidgets.Tabs]]
@@ -97,8 +97,8 @@ TabLabel = "Enums.bf"
 TabWidth = 83.0
 Type = "SourceViewPanel"
 FilePath = "src\\Enums.bf"
-CursorPos = 2250
-VertPos = 945.0
+CursorPos = 2741
+VertPos = 1170.0
 ProjectName = "VmScriptingFun"
 
 [[MainDockingFrame.DockedWidgets.DockedWidgets.DockedWidgets.Tabs]]
