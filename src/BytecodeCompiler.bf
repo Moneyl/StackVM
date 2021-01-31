@@ -78,8 +78,11 @@ namespace VmScriptingFun
 			_binary = binary;
 			_tokenizer.SetSource(source);
 			Advance();
-			Expression();
-			Consume(.Eof, "Expected end of expression.");
+			while(_current.Type != .Eof)
+			{
+				Expression();
+				Consume(.Semicolon, "Expressions must end with a semicolon ';'");
+			}
 
 			return _hadError ? .CompileError : .RuntimeError;
 		}
