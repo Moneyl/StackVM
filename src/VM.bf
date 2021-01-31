@@ -6,17 +6,21 @@ namespace VmScriptingFun
 	//Stack based virtual machine. Runs bytecode
 	public class VM
 	{
-
-
 		private VmValue[VMConfig.StackSize] _stack = .(); //Contains temporary variables and state. Data stored LIFO.
 		private u32 _stackPos = 0; //Current position in the stack
 
 		//Binary blob executed by the VM. Contains constants and bytecodes
-		private BinaryBlob _binary = new BinaryBlob();
+		private BinaryBlob _binary = new BinaryBlob() ~delete _;
 		private u32 _binaryPos = 0;
 
 		//Converts a script string to bytecode
 		private BytecodeCompiler _compiler = new BytecodeCompiler() ~delete _;
+
+		public ~this()
+		{
+			//Reset state and free heap resources
+			Reset();
+		}
 
 		private void Push(VmValue value)
 		{
@@ -58,12 +62,23 @@ namespace VmScriptingFun
 				case .Add:
 					VmValue b = Pop();
 					VmValue a = Pop();
-					if(!a.IsNumber() || !b.IsNumber())
+					if(a.IsNumber() && b.IsNumber())
+					{
+						Push(.Number(a.AsNumber() + b.AsNumber()));
+					}
+					else if(a.IsString() && b.IsString())
+					{
+						Push(.String(new String()..AppendF("{}{}", a.AsString(), b.AsString())));
+					}
+					else
 					{
 						RuntimeError(scope $"Operands for add bytecode must be a number. Bytecode: {bytecode}, a: {a}, b: {b}");
 						return .RuntimeError;
 					}
-					Push(.Number(a.AsNumber() + b.AsNumber()));
+
+					//Delete heap data if present (for strings and objects)
+					a.DeleteHeapAllocatedData();
+					b.DeleteHeapAllocatedData();
 					break;
 				case .Subtract:
 					VmValue b = Pop();
@@ -112,6 +127,9 @@ namespace VmScriptingFun
 					VmValue a = Pop();
 					Push(.Bool(a.EqualTo(b)));
 
+					//Delete heap data if present (for strings and objects)
+					a.DeleteHeapAllocatedData();
+					b.DeleteHeapAllocatedData();
 					break;
 				case .GreaterThan:
 					VmValue b = Pop();
@@ -137,7 +155,13 @@ namespace VmScriptingFun
 				case .Value:
 						u32 constantIndex = *(u32*)&_binary.Bytecodes[_binaryPos + 1];
 						_binaryPos += 4;
-						Push(_binary.Constants[constantIndex]);
+						var value = _binary.Constants[constantIndex];
+						if(value.IsString())
+							Push(.String(new String(value.AsString())));
+						else if(value.IsObj())
+							Push(.Obj(value.AsObj().Copy()));
+						else
+							Push(value);
 						break;
 				case .Pop:
 						Pop();
@@ -166,6 +190,13 @@ namespace VmScriptingFun
 		public void Reset()
 		{
 			_binary.Reset();
+			//Delete heap allocated values
+			for(u32 i = 0; i < _stackPos; i++)
+			{
+				var value = ref _stack[i];
+				if(value.IsHeapAllocated())
+					value.DeleteHeapAllocatedData();
+			}
 			_stackPos = 0;
 		}
 

@@ -67,7 +67,7 @@ namespace VmScriptingFun
 			_parseRules[(u32)TokenType.Null] = .(=> Literal, null, .None);
 			_parseRules[(u32)TokenType.Identifier] = .(null, null, .None);
 			_parseRules[(u32)TokenType.Number] = .(=> Number, null, .None);
-			_parseRules[(u32)TokenType.String] = .(null, null, .None);
+			_parseRules[(u32)TokenType.String] = .(=> String, null, .None);
 			_parseRules[(u32)TokenType.Eof] = .(null, null, .None);
 			_parseRules[(u32)TokenType.Error] = .(null, null, .None);
 		}
@@ -142,6 +142,12 @@ namespace VmScriptingFun
 		{
 			f64 value = f64.Parse(_previous.Value);
 			EmitValue(.Number(value));
+		}
+
+		//Parse string token
+		private void String()
+		{
+			EmitValue(.String(new String(_previous.Value)));
 		}
 
 		//Parse a literal (bool, null, string)

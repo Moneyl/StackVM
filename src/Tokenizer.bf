@@ -189,7 +189,11 @@ namespace VmScriptingFun
 			//Get substring and return token
 			u32 substringLength = identifierEnd - _pos;
 			_pos += substringLength;
-			return .Ok(.(tokenType, _source.Substring(_pos - substringLength, substringLength), _line));
+
+			if(tokenType == .String)
+				return .Ok(.(tokenType, _source.Substring(_pos - substringLength + 1, substringLength - 2), _line));
+			else
+				return .Ok(.(tokenType, _source.Substring(_pos - substringLength, substringLength), _line));
 		}
 	}
 }

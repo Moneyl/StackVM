@@ -38,6 +38,14 @@ namespace VmScriptingFun
 		public void Reset()
 		{
 			Bytecodes.Clear();
+			//Delete heap allocated values
+			for(var value in Constants)
+			{
+				if(value.IsString())
+					delete value.AsString();
+				else if(value.IsObj())
+					delete value.AsObj();
+			}
 			Constants.Clear();
 		}
 	}

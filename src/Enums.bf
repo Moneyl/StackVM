@@ -1,4 +1,4 @@
-
+using System;
 
 namespace VmScriptingFun
 {
@@ -45,7 +45,33 @@ namespace VmScriptingFun
 	{
 		Bool,
 		Number,
-		Null
+		Null,
+		Obj,
+		String
+	}
+
+	//Heap allocated object
+	public class VmObject
+	{
+		public void* Ptr;
+		public u32 Size;
+
+		public this(void* ptr, u32 size)
+		{
+			Ptr = ptr;
+			Size = size;
+		}
+
+		public ~this()
+		{
+			delete Ptr;
+		}
+
+		public VmObject Copy()
+		{
+			u8[] newObj = new u8[Size];
+			return new VmObject((void*)(u8[]*)&newObj, Size);
+		}
 	}
 
 	//Variable value
@@ -54,42 +80,22 @@ namespace VmScriptingFun
 	    case Bool(bool value);
 	    case Number(f64 value);
 		case Null;
+		case Obj(VmObject obj);
+		case String(String string);
 
-		public bool IsNumber()
-		{
-			switch(this)
-			{
-			case .Number(let value):
-				return true;
-			default:
-				return false;
-			}
-		}
-		public bool IsBool()
-		{
-			switch(this)
-			{
-			case .Bool(let value):
-				return true;
-			default:
-				return false;
-			}
-		}
-		public bool IsNull()
-		{
-			switch(this)
-			{
-			case .Null:
-				return true;
-			default:
-				return false;
-			}
-		}
+		public bool IsNumber() => ValueType() == .Number;
+		public bool IsBool() => ValueType() == .Bool;
+		public bool IsNull() => ValueType() == .Null;
+		public bool IsObj() => ValueType() == .Obj;
+		public bool IsString() => ValueType() == .String;
 		//Returns true if the value can be interpreted as boolean false (so either null or false)
-		public bool IsFalsey() mut
-		{
-			return IsNull() || (IsBool() && !AsBool());
-		}
+		public bool IsFalsey() mut => IsNull() || (IsBool() && !AsBool());
+		//Return true if the value is heap allocated
+		public bool IsHeapAllocated() mut => IsObj() || IsString();
+		public bool AsBool() mut => *(bool*)&this;
+		public f64 AsNumber() mut => *(f64*)&this;
+		public VmObject AsObj() mut => *(VmObject*)&this;
+		public String AsString() mut => *(String*)&this;
 		public bool EqualTo(VmValue b)
 		{
 			if(ValueType() != b.ValueType())
@@ -103,7 +109,11 @@ namespace VmScriptingFun
 			case .Number(let value):
 				return value == temp.AsNumber();
 			case .Null:
-				return  true;
+				return true;
+			case .Obj(let obj):
+				return obj == temp.AsObj();
+			case .String(let string):
+				return string == temp.AsString();
 			}
 		}
 		//Return number representing enum type
@@ -117,11 +127,20 @@ namespace VmScriptingFun
 				return .Number;
 			case .Null:
 				return .Null;
+			case .Obj(let obj):
+				return .Obj;
+			case .String(let string):
+				return .String;
 			}
 		}
-		public bool AsBool() mut => *(bool*)&this;
-		public f64 AsNumber() mut => *(f64*)&this;
-		
+		//Free any heap allocated objects
+		public void DeleteHeapAllocatedData() mut
+		{
+			if(IsString())
+				delete AsString();
+			else if(IsObj())
+				delete AsObj();
+		}	
 	}
 
 	//VM function result
