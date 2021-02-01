@@ -272,7 +272,7 @@ namespace VmScriptingFun
 			while(i < _binary.Bytecodes.Count)
 			{
 				Bytecode bytecode = _binary.Bytecodes[i];
-				if(bytecode == .Value || bytecode == .DefineGlobal)
+				if(bytecode == .Value || bytecode == .DefineGlobal || bytecode == .GetGlobal || bytecode == .SetGlobal)
 				{
 					u32 constantIndex = *(u32*)&_binary.Bytecodes[i + 1];
 					VmValue value = _binary.Constants[constantIndex];

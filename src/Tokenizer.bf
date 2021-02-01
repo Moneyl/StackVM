@@ -31,9 +31,11 @@ namespace VmScriptingFun
 				return .(.Eof, "EOF", _line);
 
 			//return .(.None, _source.Substring(_pos++, 1));
-			while(_pos < _source.Length)
+			NextChar: while(_pos < _source.Length)
 			{
 				char8 character = _source[_pos++];
+				if(character == '\n')
+					_line++;
 				if(IsIgnoredCharacter(character))
 					continue;
 
@@ -81,6 +83,11 @@ namespace VmScriptingFun
 				case '*':
 					return .(.Asterisk, "*", _line);
 				case '/':
+					if(At("/")) //Ignore the rest of the line when comment '//' encountered 
+					{
+						NextLine();
+						continue NextChar;
+					}
 					return .(.Slash, "/", _line);
 				case ';':
 					return .(.Semicolon, ";", _line);
@@ -127,11 +134,11 @@ namespace VmScriptingFun
 
 				//Attempt to read literal if not a keyword or operator
 				_pos--; //Decrease _pos to revert previous read
-				var maybeLiteral = TryReadLiteralOrIdentifier(_source[_pos]);
-				if(maybeLiteral == .Err)
+				var literal = TryReadLiteralOrIdentifier(_source[_pos]);
+				if(literal.Type == .Error)
 					return .(.Error, "Invalid literal error", _line);
 				else
-					return maybeLiteral.Value;
+					return literal;
 			}
 
 			return .(.Eof, "EOF", _line);
@@ -165,6 +172,15 @@ namespace VmScriptingFun
 			return (character >= 'a' && character <= 'z') || (character >= 'A' && character <= 'Z') || character == '_';
 		}
 
+		//Move to the next line
+		private void NextLine()
+		{
+			while(_source[_pos] != '\n' && _pos < _source.Length)
+			{
+				_pos++;
+			}
+		}
+
 		//Returns true if the character isn't permitted in identifiers
 		private bool IsInvalidIdentifierCharacter(char8 character)
 		{
@@ -186,7 +202,7 @@ namespace VmScriptingFun
 		}
 
 		//Attempts to read a literal token (number, identifier, string)
-		private Result<Token> TryReadLiteralOrIdentifier(char8 character)
+		private Token TryReadLiteralOrIdentifier(char8 character)
 		{
 			//Determine token type
 			TokenType tokenType = .None;
@@ -197,7 +213,7 @@ namespace VmScriptingFun
 			else if (IsAlpha(character))
 				tokenType = .Identifier;
 			else
-				return .Err;
+				return .(.Error, "Error", _line);
 
 			//Get token sub string and return it
 			u32 identifierEnd = 0;
@@ -229,9 +245,9 @@ namespace VmScriptingFun
 			_pos += substringLength;
 
 			if(tokenType == .String)
-				return .Ok(.(tokenType, _source.Substring(_pos - substringLength + 1, substringLength - 2), _line));
+				return .(tokenType, _source.Substring(_pos - substringLength + 1, substringLength - 2), _line);
 			else
-				return .Ok(.(tokenType, _source.Substring(_pos - substringLength, substringLength), _line));
+				return .(tokenType, _source.Substring(_pos - substringLength, substringLength), _line);
 		}
 	}
 }
