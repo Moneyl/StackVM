@@ -4,3 +4,6 @@ Stack based VM written in [Beef](https://www.beeflang.org/). For fun/learning pu
 ## Syntax
 - Common binary arithmetic operators `-`, `+`, `*`, `/`, unary `-`, parentheses for precedence control.
 - Common comparison and logic operators `!`, `==`, `!=`, `>`, `<`, `>=`, and `<=`.
+
+# Requirements
+- Beef nightly build from January 31st or later. Nightly downloads can be found at the very bottom of the beef homepage linked above.

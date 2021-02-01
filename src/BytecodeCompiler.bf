@@ -25,11 +25,11 @@ namespace VmScriptingFun
 		//Rule for parsing a specific token
 		private struct ParseRule
 		{
-			public readonly function void(BytecodeCompiler this) Prefix;
-			public readonly function void(BytecodeCompiler this) Infix;
+			public readonly function void(BytecodeCompiler this, bool canAssign) Prefix;
+			public readonly function void(BytecodeCompiler this, bool canAssign) Infix;
 			public readonly Precedence PrecedenceLevel;
 
-			public this(function void(VmScriptingFun.BytecodeCompiler this) prefix, function void(VmScriptingFun.BytecodeCompiler this) infix, Precedence precedenceLevel)
+			public this(function void(BytecodeCompiler this, bool canAssign) prefix, function void(BytecodeCompiler this, bool canAssign) infix, Precedence precedenceLevel)
 			{
 				Prefix = prefix;
 				Infix = infix;
@@ -42,7 +42,7 @@ namespace VmScriptingFun
 		private Token _current = .(.None, "None", 0);
 		private Token _previous;
 		private bool _hadError = false;
-		private ParseRule[24] _parseRules = .();
+		private ParseRule[25] _parseRules = .();
 
 		public this()
 		{
@@ -65,7 +65,8 @@ namespace VmScriptingFun
 			_parseRules[(u32)TokenType.True] = .(=> Literal, null, .None);
 			_parseRules[(u32)TokenType.False] = .(=> Literal, null, .None);
 			_parseRules[(u32)TokenType.Null] = .(=> Literal, null, .None);
-			_parseRules[(u32)TokenType.Identifier] = .(null, null, .None);
+			_parseRules[(u32)TokenType.Var] = .(null, null, .None);
+			_parseRules[(u32)TokenType.Identifier] = .(=> Variable, null, .None);
 			_parseRules[(u32)TokenType.Number] = .(=> Number, null, .None);
 			_parseRules[(u32)TokenType.String] = .(=> String, null, .None);
 			_parseRules[(u32)TokenType.Eof] = .(null, null, .None);
@@ -80,8 +81,7 @@ namespace VmScriptingFun
 			Advance();
 			while(_current.Type != .Eof)
 			{
-				Expression();
-				Consume(.Semicolon, "Expressions must end with a semicolon ';'");
+				Declaration();
 			}
 
 			return _hadError ? .CompileError : .RuntimeError;
@@ -126,32 +126,127 @@ namespace VmScriptingFun
 			}
 
 			//Parse prefix tokens
-			prefixFunc(this);
+			bool canAssign = precedence <= .Assignment; //Whether the precedence level is low enough to assign values to the prefix expression
+			prefixFunc(this, canAssign);
 
 			//Parse infix tokens until none remain
 			while(precedence <= GetRule(_current.Type).PrecedenceLevel)
 			{
 				Advance();
 				var infixFunc = GetRule(_previous.Type).Infix;
-				infixFunc(this);
-			}	
+				infixFunc(this, canAssign);
+			}
+
+			if(canAssign && _current.Type == .Equal)
+			{
+				Advance();
+				ErrorAtCurrent("Invalid assignment target.");
+			}
+		}
+
+		//Parse variable declaration
+		private void Declaration()
+		{
+			if(_current.Type == .Var)
+			{
+				Advance();
+				VarDeclaration();
+			}
+			else
+				Statement();
+
+			//Handle errors. Moves to the end of this statement so we can check other statements for syntax errors
+			if(_hadError)
+				Synchronize();
+		}
+
+		//Parse variable name for assignment purposes
+		private void Variable(bool canAssign)
+		{
+			NamedVariable(canAssign);
+		}
+
+		private void NamedVariable(bool canAssign)
+		{
+			u32 nameConstantIndex = CreateConstant(.String(new String(_previous.Value)));
+			if(canAssign && _current.Type == .Equal) //If equal sign is present, we're setting a global value
+			{
+				Advance();
+				Expression();
+				Emit(.SetGlobal);
+				EmitInlineValue(nameConstantIndex);
+			}
+			else //Else we're getting a global value
+			{
+				Emit(.GetGlobal);
+				EmitInlineValue(nameConstantIndex);
+			}
+		}
+
+		//Parse variable declaration
+		private void VarDeclaration()
+		{
+			//Consume identifier and create constant storing variable name
+			u32 globalNameIndex = ParseVariable("Variable identifier expected after 'var'.");
+
+			//Emit expression which the variable is being set to
+			if(_current.Type == .Equal)
+			{
+				Advance();
+				Expression();
+			}
+			else
+				EmitValue(.Null); //Set variable to null if no value is provided
+
+			//Emit global variable bytecode
+			Consume(.Semicolon, "Semicolon expected after variable declaration.");
+			DefineGlobalVariable(globalNameIndex);
+		}
+
+		//Read variable identifier string and add it to the binary constants list. Return name constant index.
+		private u32 ParseVariable(StringView message)
+		{
+			u32 constantIndex = CreateConstant(.String(new String(_current.Value)));
+			Consume(.Identifier, message);
+			return constantIndex;
+		}
+
+		//Emit bytecode defining a global variable
+		private void DefineGlobalVariable(u32 nameStringIndex)
+		{
+			Emit(.DefineGlobal);
+			EmitInlineValue(nameStringIndex);
+		}
+
+		//Parse statement
+		private void Statement()
+		{
+			ExpressionStatement();
+		}
+
+		//Parse expression statement
+		private void ExpressionStatement()
+		{
+			Expression();
+			Consume(.Semicolon, "Expressions must end with a semicolon ';'");
+			Emit(.Pop);
 		}
 
 		//Parse a number token
-		private void Number()
+		private void Number(bool canAssign)
 		{
 			f64 value = f64.Parse(_previous.Value);
 			EmitValue(.Number(value));
 		}
 
 		//Parse string token
-		private void String()
+		private void String(bool canAssign)
 		{
 			EmitValue(.String(new String(_previous.Value)));
 		}
 
 		//Parse a literal (bool, null, string)
-		private void Literal()
+		private void Literal(bool canAssign)
 		{
 			switch(_previous.Type)
 			{
@@ -170,7 +265,7 @@ namespace VmScriptingFun
 		}
 
 		//Parse a set of grouping tokens (E.g. parentheses)
-		private void Grouping()
+		private void Grouping(bool canAssign)
 		{
 			Expression();
 			Consume(.ParenthesesRight, "Expected closing parentheses ')'.");
@@ -183,7 +278,7 @@ namespace VmScriptingFun
 		}
 
 		//Parse unary operator
-		private void Unary()
+		private void Unary(bool canAssign)
 		{
 			TokenType operatorType = _previous.Type;
 
@@ -205,7 +300,7 @@ namespace VmScriptingFun
 		}
 
 		//Parse binary expression
-		void Binary()
+		void Binary(bool canAssign)
 		{
 			//Remember the operator.
 		  	TokenType operatorType = _previous.Type;
@@ -262,39 +357,86 @@ namespace VmScriptingFun
 		//Emit bytecode
 		private void Emit(Bytecode bytecode)
 		{
-			_binary.Emit(bytecode);
+			_binary.Bytecodes.Add(bytecode);
 			_binary.Lines.Add(_current.Line);
 		}
 
-		//Emit value bytecode followed by 4 byte signed integer
-		private void EmitValue(VmValue value)
+		//Emit value bytecode followed by 4 byte signed integer which is the index of the constant the value bytecode represents. Returns index of created constant.
+		private u32 EmitValue(VmValue value)
 		{
-			_binary.EmitValue(value);
-			//Emit line 5 times since EmitValue takes up 5 bytes
+			Emit(.Value);
+			EmitInlineValue((u32)_binary.Constants.Count);
+
+			//Add value to constants list
+			_binary.Constants.Add(value);
+
+			//Return constant index
+			return (u32)_binary.Constants.Count;
+		}
+
+		//Emit 4 byte value inline with the bytecode
+		private void EmitInlineValue(u32 value)
+		{
+			//Ensure there's enough room for the value
+			if(_binary.Bytecodes.Capacity < _binary.Bytecodes.Count + 4)
+				_binary.Bytecodes.Reserve(_binary.Bytecodes.Capacity + 4);
+
+			//Emit constant index by interpreting next 4 bytes as a single u32
+			u32* valuePtr = (u32*)((&_binary.Bytecodes.Back) + 1);
+			*valuePtr = value;
+			_binary.Bytecodes.[Friend]mSize += 4; //Manually update internal pos counter for list
+
 			_binary.Lines.Add(_current.Line);
 			_binary.Lines.Add(_current.Line);
 			_binary.Lines.Add(_current.Line);
 			_binary.Lines.Add(_current.Line);
-			_binary.Lines.Add(_current.Line);
+		}
+
+		//Create constant and return it's index.
+		public u32 CreateConstant(VmValue value)
+		{
+			_binary.Constants.Add(value);
+			return (u32)_binary.Constants.Count - 1;
+		}
+
+		//Called when an error is encountered. Moves to the next statement so other lines can be checked for errors.
+		private void Synchronize()
+		{
+			_hadError = false;
+
+			//Loop until end of file or next statement
+			while (_current.Type != .Eof)
+			{
+				if (_previous.Type == .Semicolon)
+					return;
+
+			  	switch (_current.Type)
+				{
+			    //case .Class
+			    //case .Function:
+			    //case .Var:
+			    //case .For:
+			    //case .If:
+			    //case .While:
+			    //case .Return:
+			    //  return;
+
+			    default:
+			      // Do nothing.
+				}
+			}
+
+			Advance();
 		}
 
 		//Report error at provided token
 		private void ErrorAt(ref Token token, StringView message)
 		{
 			Console.Write($"[Line {_current.Line}] Error");
-
 			if(token.Type == .Eof)
-			{
 				Console.Write(" at end of file");
-			}
-			else if(token.Type == .Error)
-			{
-
-			}
 			else
-			{
 				Console.Write($" at '{token.Value}'");
-			}
 
 			Console.Write($": {message}\n");
 		  	_hadError = true;

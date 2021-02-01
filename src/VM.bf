@@ -9,6 +9,9 @@ namespace VmScriptingFun
 		private VmValue[VMConfig.StackSize] _stack = .(); //Contains temporary variables and state. Data stored LIFO.
 		private u32 _stackPos = 0; //Current position in the stack
 
+		//Global variables
+		Dictionary<String, VmValue> _globals = new Dictionary<String, VmValue>() ~delete _;
+
 		//Binary blob executed by the VM. Contains constants and bytecodes
 		private BinaryBlob _binary = new BinaryBlob() ~delete _;
 		private u32 _binaryPos = 0;
@@ -153,19 +156,68 @@ namespace VmScriptingFun
 
 					break;
 				case .Value:
-						u32 constantIndex = *(u32*)&_binary.Bytecodes[_binaryPos + 1];
-						_binaryPos += 4;
-						var value = _binary.Constants[constantIndex];
-						if(value.IsString())
-							Push(.String(new String(value.AsString())));
-						else if(value.IsObj())
-							Push(.Obj(value.AsObj().Copy()));
-						else
-							Push(value);
-						break;
+					//Get value from constant list
+					u32 constantIndex = *(u32*)&_binary.Bytecodes[_binaryPos + 1];
+					_binaryPos += 4;
+					var value = _binary.Constants[constantIndex];
+
+					//Push value onto stack. Makes a copy if the value is heap allocated
+					if(value.IsString())
+						Push(.String(new String(value.AsString())));
+					else if(value.IsObj())
+						Push(.Obj(value.AsObj().Copy()));
+					else
+						Push(value);
+
+					break;
+				case .DefineGlobal:
+					//Get global name string
+					u32 constantIndex = *(u32*)&_binary.Bytecodes[_binaryPos + 1];
+					_binaryPos += 4;
+					VmValue globalName = _binary.Constants[constantIndex];
+
+					//Set global value with stack top
+					_globals[globalName.AsString()] = GetStackTop();
+					break;
+				case .GetGlobal:
+					//Get global name string and check that the variable exists
+					u32 constantIndex = *(u32*)&_binary.Bytecodes[_binaryPos + 1];
+					_binaryPos += 4;
+					VmValue globalName = _binary.Constants[constantIndex];
+					if(!_globals.ContainsKey(globalName.AsString()))
+					{
+						RuntimeError(scope $"Undefined global variable {globalName.AsString()}");
+						return .RuntimeError;
+					}
+
+					//Push global onto stack
+					VmValue global = _globals[globalName.AsString()];
+					if(global.IsString())
+						Push(.String(new String(global.AsString())));
+					else if(global.IsObj())
+						Push(.Obj(global.AsObj().Copy()));
+					else
+						Push(global);
+					break;
+				case .SetGlobal:
+					//Get global name string and check that the variable exists
+					u32 constantIndex = *(u32*)&_binary.Bytecodes[_binaryPos + 1];
+					_binaryPos += 4;
+					VmValue globalName = _binary.Constants[constantIndex];
+					if(!_globals.ContainsKey(globalName.AsString()))
+					{
+						RuntimeError(scope $"Undefined global variable {globalName.AsString()}");
+						return .RuntimeError;
+					}
+
+					//Set global value with stack top
+					_globals[globalName.AsString()] = GetStackTop();
+
+					break;
 				case .Pop:
-						Pop();
-						break;
+					var value = Pop();
+					value.DeleteHeapAllocatedData();
+					break;
 				default:
 					break;
 				}
@@ -176,20 +228,11 @@ namespace VmScriptingFun
 			return .Ok;
 		}
 
-		public void Emit(Bytecode bytecode)
-		{
-			_binary.Emit(bytecode);
-		}
-
-		public void EmitValue(VmValue value)
-		{
-			_binary.EmitValue(value);
-		}
-
 		//Reset vm state. Clear stack, bytecode, and constants
 		public void Reset()
 		{
 			_binary.Reset();
+			_globals.Clear();
 			//Delete heap allocated values
 			for(u32 i = 0; i < _stackPos; i++)
 			{
@@ -210,6 +253,12 @@ namespace VmScriptingFun
 		{
 			//Todo: Move into VM
 			Console.WriteLine("Writing VM state:");
+			Console.WriteLine("Global variables:");
+			for(var global in _globals)
+			{
+				Console.WriteLine($"    {global.key} = {global.value}");
+			}
+
 			Console.WriteLine("Stack state:");
 			for(u32 i = 0; i < _stackPos; i++)
 			{
@@ -223,7 +272,7 @@ namespace VmScriptingFun
 			while(i < _binary.Bytecodes.Count)
 			{
 				Bytecode bytecode = _binary.Bytecodes[i];
-				if(bytecode == .Value)
+				if(bytecode == .Value || bytecode == .DefineGlobal)
 				{
 					u32 constantIndex = *(u32*)&_binary.Bytecodes[i + 1];
 					VmValue value = _binary.Constants[constantIndex];

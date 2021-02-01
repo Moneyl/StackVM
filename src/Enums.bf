@@ -5,6 +5,7 @@ namespace VmScriptingFun
 	//Instructions ran by the VM
 	public enum Bytecode : u8
 	{
+		Nop,
 		Add, //Pop top two values from the stack. Add together. Push result onto stack.
 		Subtract, //Pop top two values from the stack. Subtract together. Push result onto stack.
 		Multiply, //Pop top two values from the stack. Multiply together. Push result onto stack.
@@ -16,6 +17,9 @@ namespace VmScriptingFun
 		EqualEqual, //Pop two values off of stack. Push true onto stack if a == b, and false if not
 		GreaterThan, //Pop two values off of stack. Push true onto stack a > b, false if not
 		LessThan, //Pop two values off of stack. Push true onto stack a < b, false if not
+		DefineGlobal, //Assigns value at the top of the stack to a global variable
+		GetGlobal, //Get global name and push it onto the stack
+		SetGlobal, //Set value of global at the top of the stack
 	}
 
 	//Token identifier
@@ -32,7 +36,7 @@ namespace VmScriptingFun
 		GreaterThanOrEqual, LessThanOrEqual, EqualEqual,
 
 		//Keywords
-		True, False, Null,
+		True, False, Null, Var,
 
 		//Literals
 		Identifier, Number, String, 

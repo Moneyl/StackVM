@@ -12,6 +12,9 @@ namespace VmScriptingFun
 		private char8[24] _invalidIdentifierCharacters = .(' ', '\n', '\t', '\0', '(', ')', '{', '}',
 			',', '.', '=', '!', '+', '-', '*', '/', '^',
 			'%', '?', '>', '<', '!', ':', ';');
+		private char8[23] _invalidNumberCharacters = .(' ', '\n', '\t', '\0', '(', ')', '{', '}',
+			',', '=', '!', '+', '-', '*', '/', '^',
+			'%', '?', '>', '<', '!', ':', ';');
 
 		//Set source string. Doesn't take ownership of string. The string must stay alive until the tokenizer is destroyed.
 		public void SetSource(StringView source)
@@ -112,6 +115,12 @@ namespace VmScriptingFun
 						_pos += 3;
 						return .(.Null, "null", _line);
 					}
+				case 'v':
+					if(At("ar"))
+					{
+						_pos += 2;
+						return .(.Var, "var", _line);
+					}
 				default:
 					break;
 				}
@@ -166,6 +175,16 @@ namespace VmScriptingFun
 			return false;
 		}
 
+		//Returns true if the character isn't permitted in numbers
+		private bool IsInvalidNumberCharacter(char8 character)
+		{
+			for(var _invalidChar in _invalidNumberCharacters)
+				if(_invalidChar == character)
+					return true;
+
+			return false;
+		}
+
 		//Attempts to read a literal token (number, identifier, string)
 		private Result<Token> TryReadLiteralOrIdentifier(char8 character)
 		{
@@ -182,9 +201,28 @@ namespace VmScriptingFun
 
 			//Get token sub string and return it
 			u32 identifierEnd = 0;
-			for (identifierEnd = _pos; identifierEnd < _source.Length; identifierEnd++)
-				if (IsInvalidIdentifierCharacter(_source[identifierEnd]))
-					break;
+			if(tokenType == .Number)
+			{
+				for (identifierEnd = _pos; identifierEnd < _source.Length; identifierEnd++)
+					if (IsInvalidNumberCharacter(_source[identifierEnd]))
+						break;
+			}
+			else if(tokenType == .String)
+			{
+				for (identifierEnd = _pos + 1; identifierEnd < _source.Length; identifierEnd++)
+					if (_source[identifierEnd] == '"')
+					{
+						identifierEnd++;
+						break;
+					}
+			}
+			else if(tokenType == .Identifier)
+			{
+				for (identifierEnd = _pos; identifierEnd < _source.Length; identifierEnd++)
+					if (IsInvalidIdentifierCharacter(_source[identifierEnd]))
+						break;
+			}
+
 
 			//Get substring and return token
 			u32 substringLength = identifierEnd - _pos;
