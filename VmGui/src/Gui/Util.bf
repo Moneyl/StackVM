@@ -40,5 +40,50 @@ namespace VmGui.Gui
 		    }
 			return hovered;
 		}
+
+		private struct InputTextCallback_UserData
+		{
+			public String Str;
+			public ImGui.InputTextCallback ChainCallback;
+			public void* ChainCallbackUserData;
+
+			public this(String str, ImGui.InputTextCallback chainCallback, void* chainCallbackUserData)
+			{
+				Str = str;
+				ChainCallback = chainCallback;
+				ChainCallbackUserData = chainCallbackUserData;
+			}
+		}
+
+		private static int InputTextCallback(ImGui.InputTextCallbackData* data)
+		{
+			InputTextCallback_UserData* userData = (InputTextCallback_UserData*)data.UserData;
+			if(data.EventFlag == .CallbackResize) //Resize buffer
+			{
+				String str = userData.Str;
+				Runtime.Assert(data.Buf == str.Ptr);
+				str.Ptr[str.Length + 1] = ' '; //Remove null terminator
+				//Resize buffer and copy string to it
+				str.[Friend]mLength = data.BufTextLen;
+				str.Reserve(data.BufTextLen);
+				Internal.MemCpy(str.Ptr, data.Buf, data.BufTextLen);
+				data.Buf = str.Ptr;
+			}
+			else if(userData.ChainCallback != null)
+			{
+				data.UserData = userData.ChainCallbackUserData;
+				return userData.ChainCallback(data);
+			}
+			return 0;
+		}
+
+		//Input text string and auto resize str buffer
+		public static bool TextMultiline(char8* label, String str, ImGui.Vec2 size = .(0.0f, 0.0f), ImGui.InputTextFlags flags = .None, ImGui.InputTextCallback callback = null, void* userData = null)
+		{
+			var flagsTemp = flags;
+			flagsTemp |= .CallbackResize;
+			InputTextCallback_UserData cbUserData = .(str, callback, userData);
+			return ImGui.InputTextMultiline(label, str, (u64)str.Length + 1, size, flagsTemp, => InputTextCallback, &cbUserData);
+		}
 	}
 }

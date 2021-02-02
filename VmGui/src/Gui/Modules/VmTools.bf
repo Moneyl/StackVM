@@ -228,15 +228,26 @@ namespace VmGui.Gui.Modules
 			//TODO: Support comments here. Tokenizer currently discards them.
 			//TODO: Color text by using token stringview ptrs to source string
 			//Draw script colored by token
-			ImGui.PushStyleColor(.ChildBg, .(0.176f, 0.176f, 0.192f, 1.0f));
+			ImGui.PushStyleVar(.FrameBorderSize, 0.0f);
+			ImGui.PushStyleColor(.ChildBg, ImGui.GetStyle().Colors[(int)ImGui.Col.FrameBg]);
 			ImGui.BeginChild("##Script");
 
 			ImGui.Indent(25.0f);
-			ImGui.TextWrapped(_sourceString.Ptr);
+			Gui.Util.TextMultiline("##SourceStringEditor", _sourceString, .(-1.0f, 400.0f));
+			//ImGui.TextWrapped(_sourceString.Ptr);
 
 			ImGui.EndChild();
 			ImGui.PopStyleColor();
+			ImGui.PopStyleVar();
 			ImGui.End();
+		}
+
+		//Reset vm state and run source script
+		private void Run()
+		{
+			_vm.Reset();
+			_vm.Parse(_sourceString);
+			_vm.Interpret();
 		}
 
 		private void DrawToolbar(Application app)
@@ -249,7 +260,7 @@ namespace VmGui.Gui.Modules
 
 			if (ImGui.Button(Icons.ICON_FA_PLAY))
 			{
-				_vm.Interpret();
+				Run();
 			}
 			Gui.Util.TooltipOnPrevious("Run script (F5)");
 
@@ -267,7 +278,7 @@ namespace VmGui.Gui.Modules
 		private void HandleInput(Application app)
 		{
 			if(app.Input.KeyPressed(.F5))
-				_vm.Interpret();
+				Run();
 			else if(app.Input.KeyPressed(.F6))
 				_vm.Step();
 		}
