@@ -1,5 +1,5 @@
 FileVersion = 1
-Projects = {VmScriptingFun = {Path = "."}}
+Projects = {VmScriptingFun = {Path = "."}, VmGui = {Path = "VmGui"}, glfw-beef = "*", ImGui = "*", ImGuiImplOpenGL3 = "*", ImGuiImplGlfw = "*"}
 
 [Workspace]
-StartupProject = "VmScriptingFun"
+StartupProject = "VmGui"
