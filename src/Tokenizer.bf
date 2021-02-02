@@ -15,6 +15,8 @@ namespace VmScriptingFun
 		private char8[23] _invalidNumberCharacters = .(' ', '\n', '\t', '\0', '(', ')', '{', '}',
 			',', '=', '!', '+', '-', '*', '/', '^',
 			'%', '?', '>', '<', '!', ':', ';');
+		//Store tokens in for use by tools
+		public List<Token> Tokens = new List<Token>() ~delete _;
 
 		//Set source string. Doesn't take ownership of string. The string must stay alive until the tokenizer is destroyed.
 		public void SetSource(StringView source)
@@ -26,6 +28,14 @@ namespace VmScriptingFun
 
 		//Get next token
 		public Token Next()
+		{
+			Token next = NextInternal();
+			Tokens.Add(next);
+			return next;
+		}
+
+		//Get next token
+		private Token NextInternal()
 		{
 			if(_pos >= _source.Length)
 				return .(.Eof, "EOF", _line);

@@ -45,6 +45,7 @@ namespace VmGui
 			_renderer = new Renderer(_window);
 			_gui = new Gui();
 			_gui.AddModule(new GuiBase());
+			_gui.AddModule(new VmTools());
 		}
 
 		private void MainLoop()

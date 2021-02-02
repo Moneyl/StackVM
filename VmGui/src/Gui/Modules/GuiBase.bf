@@ -5,7 +5,7 @@ using ImGui;
 
 namespace VmGui.Gui.Modules
 {
-	//Main menu bar and dockspace that all other modules attach to
+	//Main menu bar and dockspace that all other modules dock to
 	public class GuiBase : IGuiModule
 	{
 		private ImGui.DockNodeFlags dockspaceFlags = 0;
