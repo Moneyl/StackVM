@@ -1,16 +1,16 @@
 
 var a = (20 + 15) / -(2 + 3) + 3;
-!(5 - 4 > 3 * 2 == !null);
-!!!false;
-"foop";
-"foo" == "foo";
-"foo" == "doo";
-"foop" + "doop";
-var someVar; //Equivalent to 'var someVar = null'
-var foopDoopLoop = 2.2;
-var someStringVar = "I'm a string!";
-var someStringVar2 = "!!!!";
-var someStringVar3 = someStringVar + someStringVar2; //String addition
-var someVar = 8.7;
-var someGlobal0 = 213232424.4;
-var someGlobal1 = 1.27E22; //Supports scientific notation
+var b = !(5 - 4 > 3 * 2 == !null);
+var c = !!!false;
+var d = "foo";
+var e = "foo" == "foo";
+var f = "foo" == "doo";
+var g = "foop" + "doop";
+var h; //Equivalent to 'var someVar = null'
+var i = 2.2;
+var j = "I'm a string!";
+var k = "!!!!";
+var l = j + k; //String addition
+var m = 8.7;
+var n = 213232424.4;
+var o = 1.27E22; //Supports scientific notation
