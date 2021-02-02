@@ -23,6 +23,7 @@ namespace VmGui.Render
 			io.DisplayFramebufferScale = .(1.0f, 1.0f);
 			io.ConfigFlags |= ImGui.ConfigFlags.NavEnableKeyboard;
 			io.ConfigFlags |= ImGui.ConfigFlags.DockingEnable;
+			//io.ConfigFlags |= ImGui.ConfigFlags.ViewportsEnable;
 
 			ImGuiImplGlfw.InitForOpenGL(_window.Base, true);
 			ImGuiImplOpenGL3.Init("#version 130");
@@ -121,6 +122,14 @@ namespace VmGui.Render
 		{
 			ImGui.Render();
 			ImGuiImplOpenGL3.RenderDrawData(ImGui.GetDrawData());
+			if(ImGui.GetIO().ConfigFlags & ImGui.ConfigFlags.ViewportsEnable != 0)
+			{
+				var mainWindowContext = _window.Base;
+				ImGui.UpdatePlatformWindows();
+				ImGui.RenderPlatformWindowsDefault();
+				glfw_beef.Glfw.MakeContextCurrent(mainWindowContext);
+			}
+			
 
 			//Clear font texture data after a few frames. Uses a ton of memory.
 			//Cleared after 60 frames since that ensures the font atlas was built and sent to the gpu so we can delete the cpu-side copy.

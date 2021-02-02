@@ -250,9 +250,17 @@ namespace VmGui.Gui.Modules
 			_vm.Interpret();
 		}
 
+		//Reset vm state but don't interpret any bytecode yet
+		private void Reset()
+		{
+			_vm.Reset();
+			_vm.Parse(_sourceString);
+		}	
+
 		private void DrawToolbar(Application app)
 		{
 			ImGui.Vec4 green = .(0.556f, 0.823f, 0.541f, 1.0f);
+			ImGui.Vec4 red = .(0.82f, 0.271f, 0.271f, 1.0f);
 			ImGui.PushStyleVar(.FrameBorderSize, 0.0f);
 			ImGui.PushStyleColor(.Button, .());
 			ImGui.PushStyleColor(.ButtonActive, .());
@@ -271,7 +279,15 @@ namespace VmGui.Gui.Modules
 			}
 			Gui.Util.TooltipOnPrevious("Step one instruction (F6)");
 
-			ImGui.PopStyleColor(3);
+			ImGui.SameLine();
+			ImGui.PushStyleColor(.Text, red);
+			if (ImGui.Button(Icons.ICON_FA_STOP))
+			{
+				Reset();
+			}
+			Gui.Util.TooltipOnPrevious("Reset VM (F7)");
+
+			ImGui.PopStyleColor(4);
 			ImGui.PopStyleVar();
 		}
 
@@ -281,6 +297,8 @@ namespace VmGui.Gui.Modules
 				Run();
 			else if(app.Input.KeyPressed(.F6))
 				_vm.Step();
+			else if(app.Input.KeyPressed(.F7))
+				Reset();
 		}
 	}
 }
