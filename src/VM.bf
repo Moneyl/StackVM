@@ -54,177 +54,188 @@ namespace VmScriptingFun
 		public VmResult Interpret()
 		{
 			//Loop through all bytecodes and interpret them
-			_binaryPos = 0;
 			while(_binaryPos < _binary.Bytecodes.Count)
 			{
-				//Todo: See if array of function pointers indexed by bytecode value is faster/more reliably fast
-				//Interpret bytecode
-				Bytecode bytecode = _binary.Bytecodes[_binaryPos];
-				switch(bytecode)
-				{
-				case .Add:
-					VmValue b = Pop();
-					VmValue a = Pop();
-					if(a.IsNumber() && b.IsNumber())
-					{
-						Push(.Number(a.AsNumber() + b.AsNumber()));
-					}
-					else if(a.IsString() && b.IsString())
-					{
-						Push(.String(new String()..AppendF("{}{}", a.AsString(), b.AsString())));
-					}
-					else
-					{
-						RuntimeError(scope $"Operands for add bytecode must be a number. Bytecode: {bytecode}, a: {a}, b: {b}");
-						return .RuntimeError;
-					}
-
-					//Delete heap data if present (for strings and objects)
-					a.DeleteHeapAllocatedData();
-					b.DeleteHeapAllocatedData();
-					break;
-				case .Subtract:
-					VmValue b = Pop();
-					VmValue a = Pop();
-					if(!a.IsNumber() || !b.IsNumber())
-					{
-						RuntimeError(scope $"Operands for subtract bytecode must be a number. Bytecode: {bytecode}, a: {a}, b: {b}");
-						return .RuntimeError;
-					}
-					Push(.Number(a.AsNumber() - b.AsNumber()));
-					break;
-				case .Multiply:
-					VmValue b = Pop();
-					VmValue a = Pop();
-					if(!a.IsNumber() || !b.IsNumber())
-					{
-						RuntimeError(scope $"Operands for multiply bytecode must be a number. Bytecode: {bytecode}, a: {a}, b: {b}");
-						return .RuntimeError;
-					}
-					Push(.Number(a.AsNumber() * b.AsNumber()));
-					break;
-				case .Divide:
-					VmValue b = Pop();
-					VmValue a = Pop();
-					if(!a.IsNumber() || !b.IsNumber())
-					{
-						RuntimeError(scope $"Operands for divide bytecode must be a number. Bytecode: {bytecode}, a: {a}, b: {b}");
-						return .RuntimeError;
-					}
-					Push(.Number(a.AsNumber() / b.AsNumber()));
-					break;
-				case .Negate:
-					VmValue value = Pop();
-					if(!value.IsNumber())
-					{
-						RuntimeError(scope $"Operand for negate bytecode must be a number. Bytecode: {bytecode}, Value: {value}");
-						return .RuntimeError;
-					}
-					Push(.Number(-value.AsNumber()));
-					break;
-				case .Not:
-					Push(.Bool(Pop().IsFalsey()));
-					break;
-				case .EqualEqual:
-					VmValue b = Pop();
-					VmValue a = Pop();
-					Push(.Bool(a.EqualTo(b)));
-
-					//Delete heap data if present (for strings and objects)
-					a.DeleteHeapAllocatedData();
-					b.DeleteHeapAllocatedData();
-					break;
-				case .GreaterThan:
-					VmValue b = Pop();
-					VmValue a = Pop();
-					if(!a.IsNumber() || !b.IsNumber())
-					{
-						RuntimeError(scope $"Operands for greater than bytecode must be a number. Bytecode: {bytecode}, a: {a}, b: {b}");
-						return .RuntimeError;
-					}
-					Push(.Bool(a.AsNumber() > b.AsNumber()));
-					break;
-				case .LessThan:
-					VmValue b = Pop();
-					VmValue a = Pop();
-					if(!a.IsNumber() || !b.IsNumber())
-					{
-						RuntimeError(scope $"Operands for less than bytecode must be a number. Bytecode: {bytecode}, a: {a}, b: {b}");
-						return .RuntimeError;
-					}
-					Push(.Bool(a.AsNumber() < b.AsNumber()));
-
-					break;
-				case .Value:
-					//Get value from constant list
-					u32 constantIndex = *(u32*)&_binary.Bytecodes[_binaryPos + 1];
-					_binaryPos += 4;
-					var value = _binary.Constants[constantIndex];
-
-					//Push value onto stack. Makes a copy if the value is heap allocated
-					if(value.IsString())
-						Push(.String(new String(value.AsString())));
-					else if(value.IsObj())
-						Push(.Obj(value.AsObj().Copy()));
-					else
-						Push(value);
-
-					break;
-				case .DefineGlobal:
-					//Get global name string
-					u32 constantIndex = *(u32*)&_binary.Bytecodes[_binaryPos + 1];
-					_binaryPos += 4;
-					VmValue globalName = _binary.Constants[constantIndex];
-
-					//Set global value with stack top
-					_globals[globalName.AsString()] = GetStackTop();
-					break;
-				case .GetGlobal:
-					//Get global name string and check that the variable exists
-					u32 constantIndex = *(u32*)&_binary.Bytecodes[_binaryPos + 1];
-					_binaryPos += 4;
-					VmValue globalName = _binary.Constants[constantIndex];
-					if(!_globals.ContainsKey(globalName.AsString()))
-					{
-						RuntimeError(scope $"Undefined global variable {globalName.AsString()}");
-						return .RuntimeError;
-					}
-
-					//Push global onto stack
-					VmValue global = _globals[globalName.AsString()];
-					if(global.IsString())
-						Push(.String(new String(global.AsString())));
-					else if(global.IsObj())
-						Push(.Obj(global.AsObj().Copy()));
-					else
-						Push(global);
-					break;
-				case .SetGlobal:
-					//Get global name string and check that the variable exists
-					u32 constantIndex = *(u32*)&_binary.Bytecodes[_binaryPos + 1];
-					_binaryPos += 4;
-					VmValue globalName = _binary.Constants[constantIndex];
-					if(!_globals.ContainsKey(globalName.AsString()))
-					{
-						RuntimeError(scope $"Undefined global variable {globalName.AsString()}");
-						return .RuntimeError;
-					}
-
-					//Set global value with stack top
-					_globals[globalName.AsString()] = GetStackTop();
-
-					break;
-				case .Pop:
-					var value = Pop();
-					value.DeleteHeapAllocatedData();
-					break;
-				default:
-					break;
-				}
-
-				_binaryPos++;
+				var result = Step();
+				if(result != .Ok)
+					return result;
 			}
 
+			return .Ok;
+		}
+
+		//Interpret a single bytecode
+		public VmResult Step()
+		{
+			if(_binaryPos >= _binary.Bytecodes.Count)
+				return .Ok;
+
+			//Todo: See if array of function pointers indexed by bytecode value is faster/more reliably fast
+			//Interpret bytecode
+			Bytecode bytecode = _binary.Bytecodes[_binaryPos];
+			switch(bytecode)
+			{
+			case .Add:
+				VmValue b = Pop();
+				VmValue a = Pop();
+				if(a.IsNumber() && b.IsNumber())
+				{
+					Push(.Number(a.AsNumber() + b.AsNumber()));
+				}
+				else if(a.IsString() && b.IsString())
+				{
+					Push(.String(new String()..AppendF("{}{}", a.AsString(), b.AsString())));
+				}
+				else
+				{
+					RuntimeError(scope $"Operands for add bytecode must be a number. Bytecode: {bytecode}, a: {a}, b: {b}");
+					return .RuntimeError;
+				}
+
+				//Delete heap data if present (for strings and objects)
+				a.DeleteHeapAllocatedData();
+				b.DeleteHeapAllocatedData();
+				break;
+			case .Subtract:
+				VmValue b = Pop();
+				VmValue a = Pop();
+				if(!a.IsNumber() || !b.IsNumber())
+				{
+					RuntimeError(scope $"Operands for subtract bytecode must be a number. Bytecode: {bytecode}, a: {a}, b: {b}");
+					return .RuntimeError;
+				}
+				Push(.Number(a.AsNumber() - b.AsNumber()));
+				break;
+			case .Multiply:
+				VmValue b = Pop();
+				VmValue a = Pop();
+				if(!a.IsNumber() || !b.IsNumber())
+				{
+					RuntimeError(scope $"Operands for multiply bytecode must be a number. Bytecode: {bytecode}, a: {a}, b: {b}");
+					return .RuntimeError;
+				}
+				Push(.Number(a.AsNumber() * b.AsNumber()));
+				break;
+			case .Divide:
+				VmValue b = Pop();
+				VmValue a = Pop();
+				if(!a.IsNumber() || !b.IsNumber())
+				{
+					RuntimeError(scope $"Operands for divide bytecode must be a number. Bytecode: {bytecode}, a: {a}, b: {b}");
+					return .RuntimeError;
+				}
+				Push(.Number(a.AsNumber() / b.AsNumber()));
+				break;
+			case .Negate:
+				VmValue value = Pop();
+				if(!value.IsNumber())
+				{
+					RuntimeError(scope $"Operand for negate bytecode must be a number. Bytecode: {bytecode}, Value: {value}");
+					return .RuntimeError;
+				}
+				Push(.Number(-value.AsNumber()));
+				break;
+			case .Not:
+				Push(.Bool(Pop().IsFalsey()));
+				break;
+			case .EqualEqual:
+				VmValue b = Pop();
+				VmValue a = Pop();
+				Push(.Bool(a.EqualTo(b)));
+
+				//Delete heap data if present (for strings and objects)
+				a.DeleteHeapAllocatedData();
+				b.DeleteHeapAllocatedData();
+				break;
+			case .GreaterThan:
+				VmValue b = Pop();
+				VmValue a = Pop();
+				if(!a.IsNumber() || !b.IsNumber())
+				{
+					RuntimeError(scope $"Operands for greater than bytecode must be a number. Bytecode: {bytecode}, a: {a}, b: {b}");
+					return .RuntimeError;
+				}
+				Push(.Bool(a.AsNumber() > b.AsNumber()));
+				break;
+			case .LessThan:
+				VmValue b = Pop();
+				VmValue a = Pop();
+				if(!a.IsNumber() || !b.IsNumber())
+				{
+					RuntimeError(scope $"Operands for less than bytecode must be a number. Bytecode: {bytecode}, a: {a}, b: {b}");
+					return .RuntimeError;
+				}
+				Push(.Bool(a.AsNumber() < b.AsNumber()));
+
+				break;
+			case .Value:
+				//Get value from constant list
+				u32 constantIndex = *(u32*)&_binary.Bytecodes[_binaryPos + 1];
+				_binaryPos += 4;
+				var value = _binary.Constants[constantIndex];
+
+				//Push value onto stack. Makes a copy if the value is heap allocated
+				if(value.IsString())
+					Push(.String(new String(value.AsString())));
+				else if(value.IsObj())
+					Push(.Obj(value.AsObj().Copy()));
+				else
+					Push(value);
+
+				break;
+			case .DefineGlobal:
+				//Get global name string
+				u32 constantIndex = *(u32*)&_binary.Bytecodes[_binaryPos + 1];
+				_binaryPos += 4;
+				VmValue globalName = _binary.Constants[constantIndex];
+
+				//Set global value with stack top
+				_globals[globalName.AsString()] = GetStackTop();
+				break;
+			case .GetGlobal:
+				//Get global name string and check that the variable exists
+				u32 constantIndex = *(u32*)&_binary.Bytecodes[_binaryPos + 1];
+				_binaryPos += 4;
+				VmValue globalName = _binary.Constants[constantIndex];
+				if(!_globals.ContainsKey(globalName.AsString()))
+				{
+					RuntimeError(scope $"Undefined global variable {globalName.AsString()}");
+					return .RuntimeError;
+				}
+
+				//Push global onto stack
+				VmValue global = _globals[globalName.AsString()];
+				if(global.IsString())
+					Push(.String(new String(global.AsString())));
+				else if(global.IsObj())
+					Push(.Obj(global.AsObj().Copy()));
+				else
+					Push(global);
+				break;
+			case .SetGlobal:
+				//Get global name string and check that the variable exists
+				u32 constantIndex = *(u32*)&_binary.Bytecodes[_binaryPos + 1];
+				_binaryPos += 4;
+				VmValue globalName = _binary.Constants[constantIndex];
+				if(!_globals.ContainsKey(globalName.AsString()))
+				{
+					RuntimeError(scope $"Undefined global variable {globalName.AsString()}");
+					return .RuntimeError;
+				}
+
+				//Set global value with stack top
+				_globals[globalName.AsString()] = GetStackTop();
+
+				break;
+			case .Pop:
+				var value = Pop();
+				value.DeleteHeapAllocatedData();
+				break;
+			default:
+				break;
+			}
+
+			_binaryPos++;
 			return .Ok;
 		}
 
@@ -241,6 +252,7 @@ namespace VmScriptingFun
 					value.DeleteHeapAllocatedData();
 			}
 			_stackPos = 0;
+			_binaryPos = 0;
 		}
 
 		//Parse script and generate bytecode from it

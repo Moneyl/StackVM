@@ -3,3 +3,6 @@ FileVersion = 1
 [Project]
 Name = "VmScriptingFun"
 StartupObject = "VmScriptingFun.Program"
+
+[Configs.Release.Win64]
+PostBuildCmds = ["CopyFilesIfNewer(\"$(ProjectDir)/assets/*\", \"$(ProjectDir)/build/Release_Win64/VmGui/assets/\")"]

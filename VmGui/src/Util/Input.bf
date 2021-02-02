@@ -64,12 +64,16 @@ namespace VmGui.Util
 			InputEvent = default;
 		}
 
-		//Triggers input callbacks
-		public void Update()
+		public void BeginFrame()
 		{
 			_keyPressed = false;
 			_mouseButtonPressed = false;
 			_mouseMoved = false;
+		}
+
+		//Triggers input callbacks
+		public void Update()
+		{
 			InputEvent.Invoke(this);
 		}
 

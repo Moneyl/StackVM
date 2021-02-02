@@ -24,6 +24,7 @@ namespace VmGui.Gui.Modules
 			DrawStackGui(app);
 			DrawDisassemblerGui(app);
 			DrawScriptGui(app);
+			HandleInput(app);
 		}
 
 		private void DrawVariablesGui(Application app)
@@ -38,11 +39,6 @@ namespace VmGui.Gui.Modules
 			ImGui.Text("Variables");
 			FontManager.FontL.Pop();
 			ImGui.Separator();
-
-			if(ImGui.Button(Icons.ICON_FA_PLAY))
-			{
-				_vm.Interpret();
-			}
 
 			var globals = _vm.[Friend]_globals;
 			if(ImGui.BeginTable("GlobalVariablesTable", 3, .ScrollY | .RowBg | .BordersOuter | .BordersV | .Resizable | .Reorderable | .Hideable))
@@ -157,7 +153,7 @@ namespace VmGui.Gui.Modules
 			FontManager.FontL.Pop();
 			ImGui.Separator();
 
-
+			ImGui.Indent(15.0f);
 			if(ImGui.BeginTable("DisassemblerDataTable", 3, .ScrollY | .RowBg | .BordersOuter | .BordersV | .Resizable | .Reorderable | .Hideable))
 			{
 				ImGui.TableSetupScrollFreeze(1, 0); //Make first column always visible
@@ -171,20 +167,27 @@ namespace VmGui.Gui.Modules
 				var bytecodes = binary.Bytecodes;
 				var constants = binary.Constants;
 				var lines = binary.Lines;
+				uint32 binaryPos = _vm.[Friend]_binaryPos;
+				ImGui.Vec2 currentBytecodePos = .();
 				for(uint32 i = 0; i < bytecodes.Count; i++)
 				{
+					ImGui.TableNextRow();
+					ImGui.TableSetColumnIndex(0);
+
 					Bytecode bytecode = bytecodes[i];
 					uint32 line = lines[i];
 					uint32 data = 0; //Inline data that follows some bytecodes
 					bool hasInlineData = bytecode == .Value || bytecode == .DefineGlobal || bytecode == .GetGlobal || bytecode == .SetGlobal;
+					if(i == binaryPos)
+					{
+						currentBytecodePos = ImGui.GetCursorScreenPos();
+					}
 					if(hasInlineData && i < bytecodes.Count - 1)
 					{
 						data = *(uint32*)&bytecodes[i + 1];
 						i += 4;
 					}
-					
-					ImGui.TableNextRow();
-					ImGui.TableSetColumnIndex(0);
+
 					ImGui.Text(bytecode.ToString(.. scope String()));
 
 					ImGui.TableSetColumnIndex(1);
@@ -196,6 +199,14 @@ namespace VmGui.Gui.Modules
 					ImGui.TableSetColumnIndex(2);
 					ImGui.Text($"{line}");
 				}
+
+				//Todo: Replace with triangle
+				var cursorPos = ImGui.GetCursorPos();
+				var circlePos = currentBytecodePos;
+				circlePos.x -= 15.0f;
+				circlePos.y += ImGui.GetFontSize() / 2.0f;
+				ImGui.GetForegroundDrawList().AddCircleFilled(circlePos, 7.0f, ImGui.ColorConvertFloat4ToU32(.(1.0f, 1.0f, 0.0f, 1.0f)));
+				ImGui.SetCursorPos(cursorPos);
 
 				ImGui.EndTable();
 			}
@@ -211,9 +222,7 @@ namespace VmGui.Gui.Modules
 				return;
 			}
 
-			FontManager.FontL.Push();
-			ImGui.Text("Script");
-			FontManager.FontL.Pop();
+			DrawToolbar(app);
 			ImGui.Separator();
 			
 			//TODO: Support comments here. Tokenizer currently discards them.
@@ -228,6 +237,39 @@ namespace VmGui.Gui.Modules
 			ImGui.EndChild();
 			ImGui.PopStyleColor();
 			ImGui.End();
+		}
+
+		private void DrawToolbar(Application app)
+		{
+			ImGui.Vec4 green = .(0.556f, 0.823f, 0.541f, 1.0f);
+			ImGui.PushStyleVar(.FrameBorderSize, 0.0f);
+			ImGui.PushStyleColor(.Button, .());
+			ImGui.PushStyleColor(.ButtonActive, .());
+			ImGui.PushStyleColor(.Text, green);
+
+			if (ImGui.Button(Icons.ICON_FA_PLAY))
+			{
+				_vm.Interpret();
+			}
+			Gui.Util.TooltipOnPrevious("Run script (F5)");
+
+			ImGui.SameLine();
+			if (ImGui.Button(Icons.ICON_FA_STEP_FORWARD))
+			{
+				_vm.Step();
+			}
+			Gui.Util.TooltipOnPrevious("Step one instruction (F6)");
+
+			ImGui.PopStyleColor(3);
+			ImGui.PopStyleVar();
+		}
+
+		private void HandleInput(Application app)
+		{
+			if(app.Input.KeyPressed(.F5))
+				_vm.Interpret();
+			else if(app.Input.KeyPressed(.F6))
+				_vm.Step();
 		}
 	}
 }

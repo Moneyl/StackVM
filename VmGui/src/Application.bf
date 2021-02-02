@@ -11,7 +11,7 @@ namespace VmGui
 	{
 		//Core classes
 		private Window _window ~delete _;
-		private Input _input ~delete _;
+		public Input Input ~delete _;
 		private Renderer _renderer ~delete _;
 		private Gui _gui ~delete _;
 
@@ -41,7 +41,7 @@ namespace VmGui
 		private void Init()
 		{
 			_window = new Window(1280, 720, "Vm Gui");
-			_input = new Input(_window);
+			Input = new Input(_window);
 			_renderer = new Renderer(_window);
 			_gui = new Gui();
 			_gui.AddModule(new GuiBase());
@@ -54,8 +54,9 @@ namespace VmGui
 			while (!_window.ShouldClose() && !_shouldExit)
 			{
 				//Update
+				Input.BeginFrame();
 				_window.Poll();
-				_input.Update();
+				Input.Update();
 				_renderer.BeginFrame();
 				_gui.Update(this);
 				_renderer.EndFrame(_deltaTime);
@@ -75,7 +76,7 @@ namespace VmGui
 		private void InputEvent(Input state)
 		{
 			//Update misc state
-			_shouldExit = _input.KeyDown(.Escape);
+			_shouldExit = Input.KeyDown(.Escape);
 		}
 	}
 }

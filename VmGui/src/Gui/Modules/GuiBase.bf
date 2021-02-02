@@ -49,7 +49,6 @@ namespace VmGui.Gui.Modules
 
 				var drawList = ImGui.GetWindowDrawList();
 				String framerate = scope String()..AppendF("{0:G4}", app.DeltaTime * 1000.0f);
-				StringView labelAndSeparator = "|    Frametime(ms): ";
 				drawList.AddText(.(ImGui.GetCursorPosX(), 5.0f), 0xF2F5FAFF, "|    Frametime(ms): ");
 				var textSize = ImGui.CalcTextSize("|    Frametime(ms): ");
 				drawList.AddText(.(ImGui.GetCursorPosX() + (f32)textSize.x, 5.0f), ImGui.ColorConvertFloat4ToU32(Gui.Util.SecondaryTextColor), framerate.CStr());
