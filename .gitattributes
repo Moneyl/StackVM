@@ -1,0 +1,2 @@
+# Reclassify `.bf` files as Beef:
+*.bf linguist-language=Beef
