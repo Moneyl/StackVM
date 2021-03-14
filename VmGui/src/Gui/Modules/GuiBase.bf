@@ -63,8 +63,8 @@ namespace VmGui.Gui.Modules
 
 			//Set dockspace size and params
 			var viewport = ImGui.GetMainViewport();
-			ImGui.SetNextWindowPos(viewport.GetWorkPos());
-			var dockspaceSize = viewport.GetWorkSize();
+			ImGui.SetNextWindowPos(viewport.WorkPos);
+			var dockspaceSize = viewport.WorkSize;
 			ImGui.SetNextWindowSize(dockspaceSize);
 			ImGui.SetNextWindowViewport(viewport.ID);
 			ImGui.PushStyleVar(ImGui.StyleVar.WindowRounding, 0.0f);
