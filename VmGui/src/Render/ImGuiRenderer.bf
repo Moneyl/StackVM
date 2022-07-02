@@ -127,7 +127,7 @@ namespace VmGui.Render
 				var mainWindowContext = _window.Base;
 				ImGui.UpdatePlatformWindows();
 				ImGui.RenderPlatformWindowsDefault();
-				glfw_beef.Glfw.MakeContextCurrent(mainWindowContext);
+				GLFW.Glfw.MakeContextCurrent(mainWindowContext);
 			}
 			
 

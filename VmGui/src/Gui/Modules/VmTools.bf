@@ -29,7 +29,7 @@ namespace VmGui.Gui.Modules
 
 		private void DrawVariablesGui(Application app)
 		{
-			if(!ImGui.Begin(scope String()..Append(Icons.ICON_FA_SUBSCRIPT)..Append(" Variables").Ptr))
+			if(!ImGui.Begin(scope String()..Append(Icons.ICON_FA_SUBSCRIPT)..Append(" Variables\0").Ptr))
 			{
 				ImGui.End();
 				return;
@@ -87,7 +87,7 @@ namespace VmGui.Gui.Modules
 
 		private void DrawStackGui(Application app)
 		{
-			if(!ImGui.Begin(scope String()..Append(Icons.ICON_FA_TH_LIST)..Append(" Stack").Ptr))
+			if(!ImGui.Begin(scope String()..Append(Icons.ICON_FA_TH_LIST)..Append(" Stack\0").Ptr))
 			{
 				ImGui.End();
 				return;
@@ -109,29 +109,32 @@ namespace VmGui.Gui.Modules
 				ImGui.TableSetupColumn("Value", .None);
 				ImGui.TableHeadersRow();
 
-				//Todo: Use ListClipper here. Would be more performant when the stack has 100s of values
-				for(int32 row = stackTop; row >= 0; row--)
+				if(_vm.[Friend]_stackSize > 0)
 				{
-					ImGui.TableNextRow();
+					//Todo: Use ListClipper here. Would be more performant when the stack has 100s of values
+					for(int32 row = stackTop; row >= 0; row--)
+					{
+						ImGui.TableNextRow();
 
-					var value = vmStack[row];
-					ImGui.TableSetColumnIndex(0);
-					ImGui.Text($"{row}");
+						var value = vmStack[row];
+						ImGui.TableSetColumnIndex(0);
+						ImGui.Text($"{row}");
 
-					ImGui.TableSetColumnIndex(1);
-					ImGui.Text(value.ValueType().ToString(.. scope String()));
+						ImGui.TableSetColumnIndex(1);
+						ImGui.Text(value.ValueType().ToString(.. scope String()));
 
-					ImGui.TableSetColumnIndex(2);
-					if(value.IsNull())
-						ImGui.Text("Null");
-					else if(value.IsBool())
-						ImGui.Text($"{value.AsBool()}");
-					else if(value.IsNumber())
-						ImGui.Text($"{value.AsNumber():G3}");
-					else if(value.IsString())
-						ImGui.Text($"\"{value.AsString()}\"");
-					else if(value.IsObj())
-						ImGui.Text($"{value.AsObj().Ptr}");
+						ImGui.TableSetColumnIndex(2);
+						if(value.IsNull())
+							ImGui.Text("Null");
+						else if(value.IsBool())
+							ImGui.Text($"{value.AsBool()}");
+						else if(value.IsNumber())
+							ImGui.Text($"{value.AsNumber():G3}");
+						else if(value.IsString())
+							ImGui.Text($"\"{value.AsString()}\"");
+						else if(value.IsObj())
+							ImGui.Text($"{value.AsObj().Ptr}");
+					}
 				}
 
 				ImGui.EndTable();
@@ -142,7 +145,7 @@ namespace VmGui.Gui.Modules
 
 		private void DrawDisassemblerGui(Application app)
 		{
-			if(!ImGui.Begin(scope String()..Append(Icons.ICON_FA_CODE)..Append(" Disassembler")))
+			if(!ImGui.Begin(scope String()..Append(Icons.ICON_FA_CODE)..Append(" Disassembler\0")))
 			{
 				ImGui.End();
 				return;
@@ -216,7 +219,7 @@ namespace VmGui.Gui.Modules
 
 		private void DrawScriptGui(Application app)
 		{
-			if(!ImGui.Begin(scope String()..Append(Icons.ICON_FA_CODE)..Append(" Script").Ptr))
+			if(!ImGui.Begin(scope String()..Append(Icons.ICON_FA_CODE)..Append(" Script\0").Ptr))
 			{
 				ImGui.End();
 				return;

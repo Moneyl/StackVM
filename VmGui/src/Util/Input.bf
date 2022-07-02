@@ -1,6 +1,6 @@
 using System.Collections;
 using System;
-using glfw_beef;
+using GLFW;
 
 namespace VmGui.Util
 {

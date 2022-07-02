@@ -1,4 +1,4 @@
-using glfw_beef;
+using GLFW;
 using System;
 using System.Collections;
 using VmGui.Math;

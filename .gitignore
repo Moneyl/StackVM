@@ -4,3 +4,4 @@ recovery/
 build/
 
 BeefSpace_User.toml
+VmGui/imgui.ini

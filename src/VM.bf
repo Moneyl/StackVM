@@ -8,6 +8,7 @@ namespace VmScriptingFun
 	{
 		private VmValue[VMConfig.StackSize] _stack = .(); //Contains temporary variables and state. Data stored LIFO.
 		private u32 _stackPos = 0; //Current position in the stack
+		private u32 _stackSize = 0;
 
 		//Global variables
 		Dictionary<String, VmValue> _globals = new Dictionary<String, VmValue>() ~delete _;
@@ -18,6 +19,11 @@ namespace VmScriptingFun
 
 		//Converts a script string to bytecode
 		private BytecodeCompiler _compiler = new BytecodeCompiler() ~delete _;
+
+		public this()
+		{
+
+		}
 
 		public ~this()
 		{
@@ -33,6 +39,7 @@ namespace VmScriptingFun
 #endif
 
 			_stack[_stackPos++] = value;
+			_stackSize++;
 		}
 
 		private VmValue Pop()
@@ -41,6 +48,7 @@ namespace VmScriptingFun
 #if DEBUG
 			Runtime.Assert(_stackPos > 0, "Tried to pop a value from an empty stack in the VM.");
 #endif
+			_stackSize--;
 			return _stack[--_stackPos];
 		}
 
@@ -252,6 +260,7 @@ namespace VmScriptingFun
 					value.DeleteHeapAllocatedData();
 			}
 			_stackPos = 0;
+			_stackSize = 0;
 			_binaryPos = 0;
 		}
 
